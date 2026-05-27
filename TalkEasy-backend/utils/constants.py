@@ -1,4 +1,4 @@
-from models.schemas import ErrorType
+from models.chat_schema import ErrorType
 
 FALLBACK_MESSAGES = {
     ErrorType.STT_ERROR: "I'm having trouble understanding your audio right now. Please try speaking again clearly into your microphone.",

@@ -20,7 +20,14 @@ class DatabaseService:
     
     async def connect(self) -> bool:
         try:
-            logger.info(f"🔗 Connecting to MongoDB: {self.mongodb_url[:50]}...")
+            if not self.mongodb_url:
+                logger.warning("⚠️ No MONGODB_URL provided. Skipping connection attempt and using fallback.")
+                self.client = None
+                self.db = None
+                return False
+                
+            safe_url = self.mongodb_url[:50] if self.mongodb_url else "None"
+            logger.info(f"🔗 Connecting to MongoDB: {safe_url}...")
             motor_kwargs = {
                 "serverSelectionTimeoutMS": 10000,
                 "connectTimeoutMS": 10000,
@@ -55,7 +62,8 @@ class DatabaseService:
             await self._initialize_collections()
             logger.info("✅ Connected to MongoDB Atlas successfully")
             logger.info(f"📊 Using database: {db_name}")
-            logger.info(f"🌐 Connected to: {self.mongodb_url.split('@')[1].split('/')[0] if '@' in self.mongodb_url else 'localhost'}")
+            connected_host = self.mongodb_url.split('@')[1].split('/')[0] if self.mongodb_url and '@' in self.mongodb_url else 'localhost'
+            logger.info(f"🌐 Connected to: {connected_host}")
             return True
         except Exception as e:
             logger.error(f"❌ MongoDB connection failed: {e}")
@@ -398,6 +406,29 @@ class DatabaseService:
                 logger.error(f"❌ Failed to get user by email: {str(e)}")
                 return None
         return None
+
+    async def get_user_by_id(self, user_id: str) -> Optional[Dict]:
+        """Get user by ID from database"""
+        if self.db is not None:
+            try:
+                user = await self.db.users.find_one({"id": user_id}, {"_id": 0})
+                return user
+            except Exception as e:
+                logger.error(f"❌ Failed to get user by ID: {str(e)}")
+                return None
+        return None
+
+    async def get_all_users(self) -> List[Dict]:
+        """Get all users from the database"""
+        if self.db is not None:
+            try:
+                cursor = self.db.users.find({}, {"_id": 0})
+                users = await cursor.to_list(length=None)
+                return users
+            except Exception as e:
+                logger.error(f"❌ Failed to get all users: {str(e)}")
+                return []
+        return []
     
     async def update_user_last_login(self, user_id: str) -> bool:
         """Update user's last login timestamp"""

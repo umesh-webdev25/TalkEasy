@@ -398,6 +398,33 @@ class AuthService:
             logger.warning(f"AuthService: error fetching user by email from DB: {e}. Falling back to in-memory store")
             return self._store.get(email)
 
+    async def get_user_by_id(self, user_id: str) -> Optional[Dict[str, Any]]:
+        try:
+            if self.db and getattr(self.db, 'is_connected', lambda: False)():
+                user = await self.db.get_user_by_id(user_id)
+                if user:
+                    return user
+            
+            # Check in-memory store
+            for user in self._store.values():
+                if user.get("id") == user_id:
+                    return user
+            return None
+        except Exception as e:
+            logger.warning(f"AuthService: error fetching user by ID from DB: {e}")
+            return None
+
+    async def get_all_users(self) -> list:
+        try:
+            if self.db and getattr(self.db, 'is_connected', lambda: False)():
+                users = await self.db.get_all_users()
+                return users
+            return list(self._store.values())
+        except Exception as e:
+            logger.warning(f"AuthService: error fetching all users from DB: {e}")
+            return list(self._store.values())
+
+
     def _check_email_deliverability_blocking(self, email: str, timeout: int = 5) -> tuple:
         """Blocking checks for basic deliverability: MX lookup via dnspython if available,
         otherwise fall back to A/AAAA DNS resolution. Returns (is_reachable, error_message).

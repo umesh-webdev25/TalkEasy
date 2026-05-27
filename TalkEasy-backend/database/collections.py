@@ -1,0 +1,5 @@
+USERS_COLLECTION = "users"
+CHAT_SESSIONS_COLLECTION = "chat_sessions"
+REVOKED_TOKENS_COLLECTION = "revoked_tokens"
+SYSTEM_INFO_COLLECTION = "system_info"
+TEST_COLLECTION = "test_collection"
