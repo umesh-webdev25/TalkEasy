@@ -7,7 +7,8 @@ const Modal = ({
   title,
   children,
   size = 'md',
-  showClose = true
+  showClose = true,
+  className = ''
 }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -29,15 +30,15 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 mt-45" >
       {/* Backdrop */}
-      <div 
-        className="absolute inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-md transition-opacity duration-300"
+      {/* <div 
+        className="absolute inset-0 bg-slate-900/60  backdrop-blur-md transition-opacity duration-300"
         onClick={onClose}
       />
-      
+       */}
       {/* Modal Content */}
-      <div className={`relative w-full ${sizeClasses[size]} glass-panel rounded-3xl shadow-2xl p-6 md:p-8 z-10 transition-transform duration-300 scale-100 flex flex-col max-h-[90vh]`}>
+      <div className={`relative w-full ${sizeClasses[size]} glass-panel rounded-3xl shadow-2xl p-6 md:p-8 z-10 transition-transform duration-300 scale-100 flex flex-col max-h-[90vh] ${className}`}>
         {/* Header */}
         <div className="flex items-center justify-between pb-4 mb-4 border-b border-glass-border">
           {title && <h2 className="text-xl font-bold text-app-text">{title}</h2>}

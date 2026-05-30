@@ -8,12 +8,14 @@ import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import Dropdown from '../ui/Dropdown';
 import { getUserById } from '../../api/authApi';   // ← ID‑based API
+import ProfileModal from './ProfileModal';
 const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const { activeChat, setSettingsOpen } = useChat();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [userInitials, setUserInitials] = useState('');
   const [user, setUser] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   // -----------------------------------------------------------------
   // 1️⃣ Fetch the full user profile once on mount (via ID)
   // -----------------------------------------------------------------
@@ -57,7 +59,7 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   };
 
   const profileItems = [
-    { label: 'My Profile', icon: User, onClick: () => alert('Profile page under development') },
+    { label: 'My Profile', icon: User, onClick: () => setIsProfileOpen(true) },
     { label: 'Settings',   icon: Settings, onClick: () => setSettingsOpen(true) },
     { divider: true },
     { label: 'Sign Out',   icon: LogOut, danger: true, onClick: handleLogout }
@@ -140,6 +142,13 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
           />
         </div>
       </div>
+
+      <ProfileModal 
+        isOpen={isProfileOpen} 
+        onClose={() => setIsProfileOpen(false)} 
+        user={user} 
+        userInitials={userInitials} 
+      />
     </header>
   );
 };
