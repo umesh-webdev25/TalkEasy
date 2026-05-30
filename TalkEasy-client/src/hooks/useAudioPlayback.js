@@ -32,7 +32,12 @@ export const useAudioPlayback = () => {
       return;
     }
 
-    if (!audioContextRef.current) return;
+    if (!audioContextRef.current) {
+      audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioContextRef.current.state === 'suspended') {
+      audioContextRef.current.resume();
+    }
 
     isPlayingRef.current = true;
     setIsPlaying(true);
