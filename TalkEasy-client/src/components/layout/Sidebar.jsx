@@ -4,7 +4,10 @@ import { useChat } from '../../context/ChatContext';
 import Button from '../ui/Button';
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
-  const { chats, activeChatId, setActiveChatId, createNewChat, deleteChat, loadingChats } = useChat();
+  const { 
+    chats, activeChatId, setActiveChatId, createNewChat, deleteChat, toggleStarChat, loadingChats,
+    activeSidebarView, setActiveSidebarView, files, analyzeFile, handleUploadFile
+  } = useChat();
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -14,17 +17,31 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   }, []);
 
   const navItems = [
-    { label: 'Chats', icon: MessageSquare, active: true },
-    { label: 'History', icon: History },
-    { label: 'Starred', icon: Star },
-    { label: 'Files', icon: FolderOpen },
-    { label: 'Tools', icon: Wrench, badge: 'New' }
+    { id: 'chats', label: 'Chats', icon: MessageSquare },
+    // { id: 'history', label: 'History', icon: History },
+    { id: 'starred', label: 'Starred', icon: Star },
+    { id: 'files', label: 'Files', icon: FolderOpen },
+    { id: 'tools', label: 'Tools', icon: Wrench, badge: 'New' }
   ];
 
   const filteredChats = chats.filter(chat => 
     chat.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
     chat.preview.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const starredChats = filteredChats.filter(c => c.isStarred);
+
+  const handleToolClick = (toolType) => {
+    createNewChat(null, toolType);
+    if (window.innerWidth < 768) toggleSidebar();
+  };
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      await handleUploadFile(file);
+    }
+  };
 
   return (
     <>
@@ -82,62 +99,67 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </div>
 
           {/* Navigation Items */}
-          <nav className="px-3 space-y-1">
+          <nav className="px-3 space-y-1 mb-4">
             {navItems.map((item, idx) => {
               const Icon = item.icon;
+              const isActive = activeSidebarView === item.id;
               return (
-                <a
+                <button
                   key={idx}
-                  href="#"
-                  className={`flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
-                    item.active
+                  onClick={() => setActiveSidebarView(item.id)}
+                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
+                    isActive
                       ? 'bg-brand-blue/10 text-brand-blue dark:text-brand-cyan'
                       : 'text-app-text-secondary hover:bg-surface-solid-hover'
                   }`}
                 >
-                  <Icon size={18} className={item.active ? 'text-brand-blue dark:text-brand-cyan' : 'text-app-text-muted'} />
-                  <span className="flex-1">{item.label}</span>
+                  <Icon size={18} className={isActive ? 'text-brand-blue dark:text-brand-cyan' : 'text-app-text-muted'} />
+                  <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && (
                     <span className="bg-brand-blue dark:bg-brand-cyan/20 text-white dark:text-brand-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">
                       {item.badge}
                     </span>
                   )}
-                </a>
+                </button>
               );
             })}
           </nav>
 
-          {/* Recent Chats Header */}
-          <div className="mt-6 px-5 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
-            <span>Recent Chats</span>
-            <button 
-              onClick={() => setShowSearch(!showSearch)} 
-              className="p-1 rounded-md text-app-text-muted hover:text-app-text transition-colors"
-            >
-              <Search size={14} />
-            </button>
-          </div>
-
-          {/* Search bar within recent chats */}
-          {showSearch && (
-            <div className="px-4 mb-3">
-              <input
-                type="text"
-                placeholder="Filter chats..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-glass-input-bg border border-glass-border rounded-xl py-2 px-3 text-xs outline-none text-app-text placeholder:text-app-text-muted focus:ring-1 focus:ring-brand-blue/30 transition-all duration-300"
-              />
-            </div>
-          )}
-
-          {/* Recent Chats List */}
-          <div className="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
-            {loadingChats ? (
-              <div className="text-center py-6 text-xs text-brand-blue dark:text-brand-cyan font-medium animate-pulse">
-                Loading chats...
+          {/* Dynamic Rendering Area based on activeSidebarView */}
+          
+          {(activeSidebarView === 'chats' || activeSidebarView === 'history' || activeSidebarView === 'starred') && (
+            <>
+              {/* Chats/History Header */}
+              <div className="px-5 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
+                <span>{activeSidebarView === 'starred' ? 'Starred Chats' : (activeSidebarView === 'history' ? 'Chat History' : 'Recent Chats')}</span>
+                <button 
+                  onClick={() => setShowSearch(!showSearch)} 
+                  className="p-1 rounded-md text-app-text-muted hover:text-app-text transition-colors"
+                >
+                  <Search size={14} />
+                </button>
               </div>
-            ) : filteredChats.map((chat) => (
+
+              {/* Search bar within recent chats */}
+              {showSearch && (
+                <div className="px-4 mb-3">
+                  <input
+                    type="text"
+                    placeholder="Filter chats..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-glass-input-bg border border-glass-border rounded-xl py-2 px-3 text-xs outline-none text-app-text placeholder:text-app-text-muted focus:ring-1 focus:ring-brand-blue/30 transition-all duration-300"
+                  />
+                </div>
+              )}
+
+              {/* Recent Chats List */}
+              <div className="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+                {loadingChats ? (
+                  <div className="text-center py-6 text-xs text-brand-blue dark:text-brand-cyan font-medium animate-pulse">
+                    Loading chats...
+                  </div>
+                ) : (activeSidebarView === 'starred' ? starredChats : filteredChats).map((chat) => (
               <div
                 key={chat.id}
                 onClick={() => {
@@ -162,6 +184,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   {chat.preview}
                 </p>
                 
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleStarChat(chat.id, !chat.isStarred);
+                  }}
+                  className={`absolute right-10 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200 ${
+                    chat.isStarred ? 'text-yellow-400 opacity-100' : 'text-app-text-muted hover:text-yellow-400 hover:bg-surface-solid-hover opacity-0 group-hover:opacity-100'
+                  }`}
+                >
+                  <Star size={13} fill={chat.isStarred ? "currentColor" : "none"} />
+                </button>
+
                 {/* Delete Button on Hover */}
                 <button
                   onClick={(e) => {
@@ -181,6 +215,76 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </div>
             )}
           </div>
+            </>
+          )}
+
+          {activeSidebarView === 'files' && (
+            <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
+              <div className="px-2 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider">
+                Files
+              </div>
+              <div className="mb-3 px-2">
+                <label className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan border border-brand-blue/20 rounded-xl cursor-pointer hover:bg-brand-blue/20 transition-all duration-300">
+                  <Plus size={16} />
+                  <span className="font-bold text-xs uppercase tracking-wide">Upload File</span>
+                  <input type="file" className="hidden" onChange={handleFileUpload} />
+                </label>
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
+                {files && files.length > 0 ? (
+                  files.map((file, idx) => (
+                    <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-surface-solid border border-glass-border">
+                      <div className="w-8 h-8 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center">
+                        <FolderOpen size={14} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-app-text truncate">{file.fileName || file.name}</div>
+                        <div className="text-[10px] text-app-text-secondary">{file.fileType || file.type}</div>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          createNewChat(`Analyze this file: ${file.fileName || file.name}`, 'file_analyzer');
+                        }}
+                        className="p-1.5 text-app-text-muted hover:text-brand-blue transition-colors"
+                      >
+                        <MessageSquare size={14} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-xs text-app-text-muted font-medium">
+                    No files uploaded
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSidebarView === 'tools' && (
+            <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
+              <div className="px-2 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider">
+                AI Tools
+              </div>
+              <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pb-4">
+                {[
+                  { id: 'translator', name: 'Translator', desc: 'Translate text accurately' },
+                  { id: 'meeting_notes', name: 'Meeting Notes', desc: 'Summarize meetings' },
+                  { id: 'email_writer', name: 'Email Writer', desc: 'Professional emails' },
+                  { id: 'code_assistant', name: 'Code Assistant', desc: 'Expert software engineer' }
+                ].map(tool => (
+                  <div 
+                    key={tool.id} 
+                    onClick={() => handleToolClick(tool.id)}
+                    className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:border-brand-blue/30 cursor-pointer transition-all duration-300"
+                  >
+                    <div className="font-bold text-sm text-app-text mb-1">{tool.name}</div>
+                    <div className="text-xs text-app-text-secondary">{tool.desc}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
         </div>
       </aside>
     </>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Menu, Sun, Moon, Search, LayoutGrid,
-  ChevronDown, User, Settings, LogOut
+  ChevronDown, User, Settings, LogOut, Star
 } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -12,7 +12,7 @@ import ProfileModal from './ProfileModal';
 import GlobalSearchModal from '../ui/GlobalSearchModal';
 
 const Navbar = ({ onMenuClick, sidebarOpen }) => {
-  const { activeChat, setSettingsOpen } = useChat();
+  const { activeChat, setSettingsOpen, toggleStarChat } = useChat();
   const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [userInitials, setUserInitials] = useState('');
@@ -96,7 +96,17 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
               <h1 className="font-extrabold text-app-text text-sm md:text-base truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">
                 {activeChat ? activeChat.title : 'New Conversation'}
               </h1>
-              <ChevronDown size={14} className="text-app-text-muted" />
+              {activeChat && (
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleStarChat(activeChat.id, !activeChat.isStarred);
+                  }}
+                  className={`p-1 rounded-md transition-colors ${activeChat.isStarred ? 'text-yellow-400' : 'text-app-text-muted hover:text-yellow-400'}`}
+                >
+                  <Star size={14} fill={activeChat.isStarred ? "currentColor" : "none"} />
+                </button>
+              )}
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>

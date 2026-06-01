@@ -138,6 +138,23 @@ async def search_chat_messages(
         logger.error(f"Error searching chat messages: {str(e)}")
         return {"success": False, "results": [], "error": str(e)}
 
+async def toggle_star_endpoint(
+    request: Request,
+    session_id: str = Path(..., description="Session ID"),
+    database_service: DatabaseService = Depends(get_database_service)
+):
+    try:
+        if not database_service:
+            return {"success": False, "message": "Database service not available"}
+        body = await request.json()
+        is_starred = body.get("isStarred", False)
+        
+        success = await database_service.toggle_star_session(session_id, is_starred)
+        return {"success": success}
+    except Exception as e:
+        logger.error(f"Error toggling star for {session_id}: {str(e)}")
+        return {"success": False, "message": str(e)}
+
 async def clear_session_history(
     session_id: str = Path(..., description="Session ID"),
     database_service: DatabaseService = Depends(get_database_service)
@@ -166,11 +183,32 @@ async def chat_with_agent_text(
     try:
         body = await request.json()
         text = body.get("text", "")
+        tool_type = body.get("toolType", "")
         
         if not text:
             return {"success": False, "message": "Text required"}
             
+        # Define tool-specific system prompts
+        tool_prompts = {
+            "translator": "You are a professional translator. Translate text accurately while preserving meaning and tone.",
+            "meeting_notes": "You are a meeting assistant. Generate summaries, action items, decisions, and next steps.",
+            "email_writer": "You are a professional email writing assistant.",
+            "code_assistant": "You are an expert software engineer and coding assistant."
+        }
+        
+        if tool_type and tool_type in tool_prompts:
+            # We temporarily override the persona
+            llm_service.persona = tool_prompts[tool_type]
+
         chat_history = await database_service.get_chat_history(session_id) if database_service else []
+        
+        # Save the toolType in the session if it's the first message
+        if database_service and not chat_history and tool_type:
+             await database_service.db.chat_sessions.update_one(
+                 {"session_id": session_id},
+                 {"$set": {"toolType": tool_type}}
+             )
+
         if database_service:
             await database_service.add_message_to_history(session_id, "user", text, user_id=user_id)
             

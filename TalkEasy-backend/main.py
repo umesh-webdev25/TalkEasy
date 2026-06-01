@@ -15,7 +15,8 @@ from routes import (
     chat_routes,
     persona_routes,
     config_routes,
-    websocket_routes
+    websocket_routes,
+    file_routes
 )
 
 setup_logging()
@@ -74,6 +75,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(user_routes.router)
 app.include_router(auth_routes.router)
 app.include_router(chat_routes.router)
+app.include_router(file_routes.router)
 
 app.include_router(persona_routes.router)
 app.include_router(config_routes.router)

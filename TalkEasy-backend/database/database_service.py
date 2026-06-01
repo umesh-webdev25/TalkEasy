@@ -601,6 +601,66 @@ class DatabaseService:
                 
             return results[:50]
 
+    async def toggle_star_session(self, session_id: str, is_starred: bool) -> bool:
+        """Toggle the starred status of a chat session"""
+        if self.db is not None:
+            try:
+                result = await self.db.chat_sessions.update_one(
+                    {"session_id": session_id},
+                    {"$set": {"isStarred": is_starred, "last_updated": datetime.now()}}
+                )
+                return result.matched_count > 0
+            except Exception as e:
+                logger.error(f"Failed to toggle star for session {session_id}: {str(e)}")
+                return False
+        else:
+            if session_id in self.in_memory_store:
+                if isinstance(self.in_memory_store[session_id], dict):
+                    self.in_memory_store[session_id]["isStarred"] = is_starred
+                return True
+            return False
+
+    async def save_file_metadata(self, file_data: Dict) -> bool:
+        """Save uploaded file metadata"""
+        if self.db is not None:
+            try:
+                await self.db.files.insert_one(file_data)
+                return True
+            except Exception as e:
+                logger.error(f"Failed to save file metadata: {str(e)}")
+                return False
+        else:
+            if "files" not in self.in_memory_store:
+                self.in_memory_store["files"] = []
+            self.in_memory_store["files"].append(file_data)
+            return True
+            
+    async def get_user_files(self, user_id: str) -> List[Dict]:
+        """Get all files uploaded by a user"""
+        if self.db is not None:
+            try:
+                cursor = self.db.files.find({"uploadedBy": user_id}, {"_id": 0}).sort("uploadedAt", -1)
+                return await cursor.to_list(length=None)
+            except Exception as e:
+                logger.error(f"Failed to get user files: {str(e)}")
+                return []
+        else:
+            return [f for f in self.in_memory_store.get("files", []) if f.get("uploadedBy") == user_id]
+
+    async def get_file(self, file_id: str) -> Optional[Dict]:
+        """Get file metadata by ID"""
+        if self.db is not None:
+            try:
+                return await self.db.files.find_one({"fileId": file_id}, {"_id": 0})
+            except Exception as e:
+                logger.error(f"Failed to get file metadata: {str(e)}")
+                return None
+        else:
+            for f in self.in_memory_store.get("files", []):
+                if f.get("fileId") == file_id:
+                    return f
+            return None
+
     async def close(self):
         if self.client:
             self.client.close()

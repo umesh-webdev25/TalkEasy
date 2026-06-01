@@ -10,6 +10,9 @@ export const ChatProvider = ({ children }) => {
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
   
+  // Sidebar State
+  const [activeSidebarView, setActiveSidebarView] = useState('chats'); // 'chats', 'history', 'starred', 'files', 'tools'
+  
   const [voiceMode, setVoiceMode] = useState(false);
   const [listening, setListening] = useState(false);
   const [typing, setTyping] = useState(false);
@@ -43,9 +46,11 @@ export const ChatProvider = ({ children }) => {
       if (data.success && data.chat_histories) {
         const formatted = data.chat_histories.map(h => ({
           id: h.session_id,
-          title: 'Chat Session',
+          title: h.toolType ? `${h.toolType} Chat` : 'Chat Session',
           time: new Date(h.last_updated || h.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           preview: h.messages && h.messages.length > 0 ? h.messages[h.messages.length - 1].content.substring(0, 30) + '...' : 'No messages yet',
+          isStarred: h.isStarred || false,
+          toolType: h.toolType || null
         }));
         setChats(formatted);
         if (formatted.length > 0 && !activeChatId) {
@@ -59,11 +64,25 @@ export const ChatProvider = ({ children }) => {
     }
   }, [getHeaders, activeChatId]);
 
+  const loadFiles = useCallback(async () => {
+    if (!getToken()) return;
+    try {
+      const response = await fetch(`${API_BASE}/agent/files/all`, { headers: getHeaders() });
+      const data = await response.json();
+      if (data.success) {
+        setFiles(data.files || []);
+      }
+    } catch (err) {
+      console.error("Error loading files", err);
+    }
+  }, [getHeaders]);
+
   useEffect(() => {
     if (getToken()) {
       loadChats();
+      loadFiles();
     }
-  }, [loadChats]);
+  }, [loadChats, loadFiles]);
 
   const loadHistory = useCallback(async (sessionId) => {
     if (!sessionId || !getToken()) return;
@@ -106,20 +125,22 @@ export const ChatProvider = ({ children }) => {
     }
   }, [activeChatId, loadHistory]);
 
-  const createNewChat = (initialText = '') => {
+  const createNewChat = (initialText = '', toolType = null) => {
     const newId = Date.now().toString(); // Use a timestamp or UUID for new session
     const newChat = {
       id: newId,
-      title: 'New Conversation',
+      title: toolType ? `${toolType} Chat` : 'New Conversation',
       time: 'Just Now',
       preview: initialText || 'No messages yet',
+      isStarred: false,
+      toolType: toolType
     };
 
     setChats(prev => [newChat, ...prev]);
     setActiveChatId(newId);
 
     if (initialText) {
-      sendMessage(initialText, newId);
+      sendMessage(initialText, newId, toolType);
     }
   };
 
@@ -145,6 +166,21 @@ export const ChatProvider = ({ children }) => {
     }
   };
 
+  const toggleStarChat = async (id, isStarred) => {
+    try {
+      const response = await fetch(`${API_BASE}/agent/chat/${id}/star`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify({ isStarred })
+      });
+      if (response.ok) {
+        setChats(prev => prev.map(c => c.id === id ? { ...c, isStarred } : c));
+      }
+    } catch (err) {
+      console.error("Error toggling star", err);
+    }
+  };
+
   const appendMessagesLocal = useCallback((sessionId, newMessages, previewText) => {
     setActiveChat(prev => prev && prev.id === sessionId ? {
       ...prev,
@@ -156,9 +192,12 @@ export const ChatProvider = ({ children }) => {
     }
   }, []);
 
-  const sendMessage = async (text, overrideSessionId = null) => {
+  const sendMessage = async (text, overrideSessionId = null, overrideToolType = null) => {
     const sessionId = overrideSessionId || activeChatId;
     if (!text.trim() || !sessionId) return;
+    
+    const currentChat = chats.find(c => c.id === sessionId);
+    const toolType = overrideToolType || (currentChat ? currentChat.toolType : null);
 
     const userMsg = {
       id: Date.now().toString() + '-u',
@@ -184,7 +223,7 @@ export const ChatProvider = ({ children }) => {
       const response = await fetch(`${API_BASE}/agent/chat/${sessionId}/text`, {
         method: 'POST',
         headers: getHeaders(),
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, toolType })
       });
       
       const data = await response.json();
@@ -223,16 +262,43 @@ export const ChatProvider = ({ children }) => {
     setListening(false);
   };
 
-  const handleUploadFile = (file) => {
-    setFiles(prev => [
-      {
-        name: file.name,
-        size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-        type: file.name.split('.').pop().toUpperCase(),
-        color: file.name.endsWith('.pdf') ? 'red' : file.name.endsWith('.csv') ? 'green' : 'orange'
-      },
-      ...prev
-    ]);
+  const handleUploadFile = async (file, linkedChatId = null) => {
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (linkedChatId) {
+        formData.append("linked_chat_id", linkedChatId);
+      }
+      const response = await fetch(`${API_BASE}/agent/files/upload`, {
+        method: "POST",
+        headers: {
+          ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
+        },
+        body: formData
+      });
+      const data = await response.json();
+      if (data.success) {
+        await loadFiles();
+        return data;
+      }
+    } catch (err) {
+      console.error("Upload error", err);
+    }
+    return { success: false };
+  };
+
+  const analyzeFile = async (fileId, query, sessionId = null) => {
+    try {
+      const response = await fetch(`${API_BASE}/agent/files/${fileId}/analyze`, {
+        method: "POST",
+        headers: getHeaders(),
+        body: JSON.stringify({ query, sessionId })
+      });
+      return await response.json();
+    } catch (err) {
+      console.error("Analyze error", err);
+      return { success: false };
+    }
   };
 
   return (
@@ -245,6 +311,7 @@ export const ChatProvider = ({ children }) => {
       appendMessagesLocal,
       createNewChat,
       deleteChat,
+      toggleStarChat,
       voiceMode,
       setVoiceMode,
       listening,
@@ -264,8 +331,12 @@ export const ChatProvider = ({ children }) => {
       setSettingsOpen,
       files,
       handleUploadFile,
+      analyzeFile,
       loadChats,
-      loadingChats
+      loadFiles,
+      loadingChats,
+      activeSidebarView,
+      setActiveSidebarView
     }}>
       {children}
     </ChatContext.Provider>
