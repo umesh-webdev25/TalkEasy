@@ -24,15 +24,17 @@ const ChatPage = () => {
     setWebSearch,
     memory,
     setMemory,
-    images,
     setImages,
-    handleUploadFile
+    handleUploadFile,
+    files,
+    setFiles
   } = useChat();
 
   const [inputValue, setInputValue] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [speakingId, setSpeakingId] = useState(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState([]);
   const messagesEndRef = useRef(null);
   const imageInputRef = useRef(null);
   const docInputRef = useRef(null);
@@ -67,9 +69,34 @@ const ChatPage = () => {
 
   const handleSend = (e) => {
     e.preventDefault();
-    if (!inputValue.trim()) return;
-    sendMessage(inputValue);
+    if (!inputValue.trim() && stagedFiles.length === 0) return;
+    
+    let textToSend = inputValue;
+    
+    // Add staged files to global files state optimistically
+    if (stagedFiles.length > 0) {
+      setFiles(prev => {
+        const newFiles = stagedFiles.map(f => ({
+          fileId: f.fileId,
+          fileName: f.fileName,
+          fileType: f.fileType,
+          fileUrl: f.previewUrl || f.fileUrl || '',
+          uploadedAt: new Date().toISOString()
+        }));
+        // filter out any duplicates just in case
+        const existingIds = new Set(prev.map(p => p.fileId));
+        const filteredNewFiles = newFiles.filter(f => !existingIds.has(f.fileId));
+        return [...prev, ...filteredNewFiles];
+      });
+    }
+
+    stagedFiles.forEach(f => {
+      textToSend = `[FILE:${f.fileId}]\n` + textToSend;
+    });
+    
+    sendMessage(textToSend.trim());
     setInputValue('');
+    setStagedFiles([]);
   };
 
   const handleCopy = (text, messageId) => {
@@ -107,9 +134,19 @@ const ChatPage = () => {
     if (file) {
       const response = await handleUploadFile(file, activeChat?.id);
       if (response && response.success) {
+        setStagedFiles(prev => [...prev, {
+          fileId: response.fileId,
+          fileName: file.name,
+          fileType: file.type.startsWith('image/') ? 'image' : 'document',
+          previewUrl: URL.createObjectURL(file)
+        }]);
         setShowAttachMenu(false);
       }
     }
+  };
+
+  const removeStagedFile = (fileId) => {
+    setStagedFiles(prev => prev.filter(f => f.fileId !== fileId));
   };
 
   return (
@@ -143,7 +180,52 @@ const ChatPage = () => {
                         : 'bg-surface-solid border-glass-border text-app-text rounded-tl-none'
                     }`}
                   >
-                    <p className="whitespace-pre-line">{message.text}</p>
+                    {(() => {
+                      // Extract file attachments
+                      let displayText = message.text || '';
+                      const fileMatches = displayText.match(/\[FILE:([a-zA-Z0-9-]+)\]/g);
+                      const attachedFiles = [];
+                      
+                      if (fileMatches && files) {
+                        fileMatches.forEach(match => {
+                          const id = match.replace('[FILE:', '').replace(']', '');
+                          const fileObj = files.find(f => f.fileId === id);
+                          if (fileObj) attachedFiles.push(fileObj);
+                          displayText = displayText.replace(match, '').trim();
+                        });
+                      }
+
+                      return (
+                        <>
+                          {attachedFiles.length > 0 && (
+                            <div className="flex flex-col gap-2 mb-3">
+                              {attachedFiles.map((file, idx) => (
+                                file.fileType === 'image' ? (
+                                  <div key={idx} className="rounded-xl overflow-hidden border border-glass-border max-w-sm">
+                                    <img src={`http://localhost:8000${file.fileUrl}`} alt={file.fileName} className="w-full h-auto object-contain bg-black/20" />
+                                  </div>
+                                ) : (
+                                  <div key={idx} className="flex items-center gap-3 p-3 bg-slate-900/50 dark:bg-black/40 border border-glass-border rounded-2xl max-w-sm hover:bg-slate-800/50 transition-colors">
+                                    <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center flex-shrink-0 text-brand-cyan border border-white/5 shadow-inner">
+                                      <FileText size={24} strokeWidth={2} />
+                                    </div>
+                                    <div className="flex flex-col overflow-hidden">
+                                      <span className="text-sm font-bold text-white truncate">
+                                        {file.fileName}
+                                      </span>
+                                      <span className="text-[11px] text-slate-400 font-medium">
+                                        {new Date(file.uploadedAt).toLocaleDateString('en-GB')} • {file.fileType}
+                                      </span>
+                                    </div>
+                                  </div>
+                                )
+                              ))}
+                            </div>
+                          )}
+                          {displayText && <p className="whitespace-pre-line">{displayText}</p>}
+                        </>
+                      );
+                    })()}
                     
                     <div className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-glass-border text-[10px] text-app-text-muted font-medium ${isUser ? 'justify-end' : 'justify-between'}`}>
                       <span>{message.time}</span>
@@ -208,19 +290,45 @@ const ChatPage = () => {
             </div>
             
             <h2 className="text-2xl font-extrabold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
-              Welcome to TalkEasy AI
+              {activeChat?.toolType ? `Welcome to ${activeChat.toolType.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}` : 'Welcome to TalkEasy AI'}
             </h2>
             <p className="text-sm text-app-text-secondary mt-2.5 max-w-sm leading-relaxed font-medium">
-              Start a high-fidelity workspace by typing below or activating our futuristic voice system.
+              {activeChat?.toolType === 'translator' && 'Start translating text instantly. Just type the phrase and the target language below.'}
+              {activeChat?.toolType === 'email_writer' && 'Let me help you draft professional emails. Describe the context or goal below.'}
+              {activeChat?.toolType === 'code_assistant' && 'Your expert AI software engineer. Ask a coding question or paste code to review.'}
+              {activeChat?.toolType === 'pdf_analyzer' && 'Upload a PDF using the paperclip icon, and I will analyze or summarize it for you.'}
+              {activeChat?.toolType === 'document_summarizer' && 'Upload a document (PDF, DOCX, TXT) to get concise summaries and key points.'}
+              {activeChat?.toolType === 'meeting_notes' && 'Paste your meeting transcript to get summaries, action items, and next steps.'}
+              {!activeChat?.toolType && 'Start a high-fidelity workspace by typing below or activating our futuristic voice system.'}
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-8 w-full">
-              {[
+              {(!activeChat?.toolType ? [
                 "Explain Quantum Physics Basics",
                 "Create a Weekly Travel Plan",
                 "Code Optimization Checklist",
                 "Design a minimalist Dashboard UI"
-              ].map((suggestion, idx) => (
+              ] : activeChat?.toolType === 'translator' ? [
+                "Translate to Hindi: Hello, how are you?",
+                "Translate to Spanish: Welcome to our company.",
+                "Translate to French: I would like a coffee.",
+                "Translate to Japanese: Thank you very much."
+              ] : activeChat?.toolType === 'code_assistant' ? [
+                "Create a React login page.",
+                "Explain this Python code.",
+                "Generate MongoDB schema.",
+                "Write a debounce function in JS."
+              ] : activeChat?.toolType === 'email_writer' ? [
+                "Write a leave request email.",
+                "Write a follow-up email after an interview.",
+                "Draft an apology email for a delay.",
+                "Write an intro email to a new client."
+              ] : [
+                "What are the main takeaways?",
+                "Summarize this document.",
+                "List the action items.",
+                "Explain the key concepts."
+              ]).map((suggestion, idx) => (
                 <button
                   key={idx}
                   onClick={() => sendMessage(suggestion)}
@@ -248,8 +356,45 @@ const ChatPage = () => {
       </div>
 
       <footer className="p-4 md:p-6 bg-transparent shrink-0">
-        <div className="max-w-4xl mx-auto flex flex-col items-center">
-          <form onSubmit={handleSend} className="w-full flex items-center gap-3 bg-surface-solid rounded-2xl border border-glass-border shadow-lg px-4 py-2.5 backdrop-blur-md">
+        <div className="max-w-4xl mx-auto relative">
+          
+          {/* Staged Files Preview */}
+          {stagedFiles.length > 0 && (
+            <div className="flex flex-wrap gap-3 mb-3 p-3 bg-surface-solid border border-glass-border rounded-xl">
+              {stagedFiles.map((file) => (
+                <div key={file.fileId} className="relative group rounded-lg overflow-hidden border border-glass-border bg-glass-bg flex items-center shadow-sm">
+                  {file.fileType === 'image' ? (
+                    <div className="w-16 h-16 relative">
+                      <img src={file.previewUrl} alt="preview" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 p-2 w-40">
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-500">
+                        <FileText size={20} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-app-text truncate">{file.fileName}</div>
+                        <div className="text-[9px] text-app-text-muted">Document</div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Remove Button */}
+                  <button
+                    type="button"
+                    onClick={() => removeStagedFile(file.fileId)}
+                    className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full p-1 shadow-md transition-colors z-10 cursor-pointer"
+                    title="Remove file"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <form 
+            onSubmit={handleSend} className="w-full flex items-center gap-3 bg-surface-solid rounded-2xl border border-glass-border shadow-lg px-4 py-2.5 backdrop-blur-md">
             
             {/* Voice button */}
             <button
@@ -331,7 +476,7 @@ const ChatPage = () => {
               
               <button
                 type="submit"
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() && stagedFiles.length === 0}
                 className="w-10 h-10 rounded-xl bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-white hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer"
               >
                 <Send size={16} />

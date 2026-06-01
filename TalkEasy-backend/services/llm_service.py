@@ -134,7 +134,7 @@ class LLMService:
         response += "\nWould you like me to read any of these articles in detail?"
         return response
     
-    async def generate_response(self, user_message: str, chat_history: List[Dict], language: str = "auto") -> str:
+    async def generate_response(self, user_message: str, chat_history: List[Dict], language: str = "auto", system_prompt_override: str = None) -> str:
         try:
             # Resolve language preference
             lang = language
@@ -160,7 +160,8 @@ class LLMService:
                     # Combine search results with LLM processing for better response
                     history_context = self.format_chat_history_for_llm(chat_history)
                     
-                    enhanced_prompt = f"""You are {self.persona}. Based on the following search results, provide a comprehensive answer to the user's question.
+                    current_persona = system_prompt_override or self.persona
+                    enhanced_prompt = f"""You are {current_persona}. Based on the following search results, provide a comprehensive answer to the user's question.
 
 SEARCH RESULTS FOR "{query}":
 {formatted_results}
@@ -208,8 +209,9 @@ Summarize the key information and cite relevant sources if appropriate."""
             # Normal LLM response for non-search queries
             history_context = self.format_chat_history_for_llm(chat_history)
             
+            current_persona = system_prompt_override or self.persona
             llm_prompt = f"""{language_instruction}
-You are {self.persona}. Please respond directly to the user's current question.
+You are {current_persona}. Please respond directly to the user's current question.
 
 IMPORTANT: Always answer the CURRENT user question directly. Do not give generic responses about your capabilities unless specifically asked "what can you do".
 
@@ -248,7 +250,7 @@ Please provide a specific, helpful answer to the user's current question. Keep y
             else:
                 raise
 
-    async def generate_streaming_response(self, user_message: str, chat_history: List[Dict], web_search_results: str = None, language: str = "auto") -> AsyncGenerator[str, None]:
+    async def generate_streaming_response(self, user_message: str, chat_history: List[Dict], web_search_results: str = None, language: str = "auto", system_prompt_override: str = None) -> AsyncGenerator[str, None]:
         """Generate a streaming response from the LLM"""
         try:
             # Resolve language preference for streaming via same auto-detect helper if caller used tagging in message
@@ -285,9 +287,11 @@ Please provide a specific, helpful answer to the user's current question. Keep y
 
             history_context = self.format_chat_history_for_llm(chat_history)
             
+            current_persona = system_prompt_override or self.persona
+            
             # Build the prompt with web search results if provided
             if web_search_results:
-                llm_prompt = f"""You are {self.persona}. Please respond directly to the user's current question using the provided web search results.
+                llm_prompt = f"""You are {current_persona}. Please respond directly to the user's current question using the provided web search results.
  
  IMPORTANT: Always answer the CURRENT user question directly. Do not give generic responses about your capabilities unless specifically asked "what can you do".
  
@@ -301,7 +305,7 @@ Please provide a specific, helpful answer to the user's current question. Keep y
  Please provide a specific, helpful answer to the user's current question based on the web search results.
  Summarize the key information and cite relevant sources if appropriate. Keep your response under 3000 characters."""
             else:
-                llm_prompt = f"""You are {self.persona}. Please respond directly to the user's current question.
+                llm_prompt = f"""You are {current_persona}. Please respond directly to the user's current question.
  
  IMPORTANT: Always answer the CURRENT user question directly. Do not give generic responses about your capabilities unless specifically asked "what can you do".
  

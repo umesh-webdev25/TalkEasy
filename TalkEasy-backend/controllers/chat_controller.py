@@ -188,31 +188,57 @@ async def chat_with_agent_text(
         if not text:
             return {"success": False, "message": "Text required"}
             
-        # Define tool-specific system prompts
+        # Define tool-specific system prompts (expanding based on requirements)
         tool_prompts = {
             "translator": "You are a professional translator. Translate text accurately while preserving meaning and tone.",
             "meeting_notes": "You are a meeting assistant. Generate summaries, action items, decisions, and next steps.",
             "email_writer": "You are a professional email writing assistant.",
-            "code_assistant": "You are an expert software engineer and coding assistant."
+            "code_assistant": "You are an expert software engineer and coding assistant.",
+            "document_summarizer": "You are an expert document summarization assistant. Create concise summaries and extract key points.",
+            "pdf_analyzer": "You are an expert PDF analysis assistant. Answer questions about uploaded PDF documents and provide summaries."
         }
-        
-        if tool_type and tool_type in tool_prompts:
-            # We temporarily override the persona
-            llm_service.persona = tool_prompts[tool_type]
 
         chat_history = await database_service.get_chat_history(session_id) if database_service else []
         
-        # Save the toolType in the session if it's the first message
+        # Determine toolType. Either from current request, or DB if it's already an active session
+        session_info = {}
+        if database_service and not tool_type:
+            if database_service.db is not None:
+                session_doc = await database_service.db.chat_sessions.find_one({"session_id": session_id})
+                if session_doc and "toolType" in session_doc:
+                    tool_type = session_doc["toolType"]
+
+        system_prompt_override = None
+        if tool_type and tool_type in tool_prompts:
+            system_prompt_override = tool_prompts[tool_type]
+
+        # Save the toolType in the session if it's the first message and not already saved
         if database_service and not chat_history and tool_type:
-             await database_service.db.chat_sessions.update_one(
-                 {"session_id": session_id},
-                 {"$set": {"toolType": tool_type}}
-             )
+            if database_service.db is not None:
+                 await database_service.db.chat_sessions.update_one(
+                     {"session_id": session_id},
+                     {"$set": {"toolType": tool_type}},
+                     upsert=True
+                 )
+
+        # Inject Document Context if any files are linked to this session
+        final_text = text
+        if database_service:
+            session_files = await database_service.get_files_by_session(session_id)
+            if session_files:
+                doc_context = ""
+                for file_info in session_files:
+                    if file_info.get("extractedText"):
+                        doc_context += f"--- Document: {file_info.get('fileName')} ---\n{file_info.get('extractedText')}\n\n"
+                
+                if doc_context:
+                    # We inject it transparently into the LLM prompt, but we shouldn't save this giant text into the user's chat history directly
+                    final_text = f"Document Content:\n{doc_context}\n\nUser Question:\n{text}"
 
         if database_service:
             await database_service.add_message_to_history(session_id, "user", text, user_id=user_id)
             
-        response_text = await llm_service.generate_response(text, chat_history)
+        response_text = await llm_service.generate_response(final_text, chat_history, system_prompt_override=system_prompt_override)
         
         if database_service:
             await database_service.add_message_to_history(session_id, "assistant", response_text, user_id=user_id)
@@ -267,15 +293,47 @@ async def chat_with_agent(
         
         transcribed_text = await stt_service.transcribe_audio(temp_audio_path)
         
+        tool_prompts = {
+            "translator": "You are a professional translator. Translate text accurately while preserving meaning and tone.",
+            "meeting_notes": "You are a meeting assistant. Generate summaries, action items, decisions, and next steps.",
+            "email_writer": "You are a professional email writing assistant.",
+            "code_assistant": "You are an expert software engineer and coding assistant.",
+            "document_summarizer": "You are an expert document summarization assistant. Create concise summaries and extract key points.",
+            "pdf_analyzer": "You are an expert PDF analysis assistant. Answer questions about uploaded PDF documents and provide summaries."
+        }
+
         if not database_service:
             chat_history = []
             user_save_success = False
             assistant_save_success = False
+            tool_type = None
         else:
             chat_history = await database_service.get_chat_history(session_id)
             user_save_success = await database_service.add_message_to_history(session_id, "user", transcribed_text, user_id=user_id)
-        
-        response_text = await llm_service.generate_response(transcribed_text, chat_history)
+            
+            tool_type = None
+            if database_service.db is not None:
+                session_doc = await database_service.db.chat_sessions.find_one({"session_id": session_id})
+                if session_doc and "toolType" in session_doc:
+                    tool_type = session_doc["toolType"]
+
+        system_prompt_override = None
+        if tool_type and tool_type in tool_prompts:
+            system_prompt_override = tool_prompts[tool_type]
+
+        final_text = transcribed_text
+        if database_service:
+            session_files = await database_service.get_files_by_session(session_id)
+            if session_files:
+                doc_context = ""
+                for file_info in session_files:
+                    if file_info.get("extractedText"):
+                        doc_context += f"--- Document: {file_info.get('fileName')} ---\n{file_info.get('extractedText')}\n\n"
+                
+                if doc_context:
+                    final_text = f"Document Content:\n{doc_context}\n\nUser Question:\n{transcribed_text}"
+
+        response_text = await llm_service.generate_response(final_text, chat_history, system_prompt_override=system_prompt_override)
         
         if database_service:
             assistant_save_success = await database_service.add_message_to_history(session_id, "assistant", response_text, user_id=user_id)

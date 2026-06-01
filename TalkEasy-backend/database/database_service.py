@@ -647,6 +647,18 @@ class DatabaseService:
         else:
             return [f for f in self.in_memory_store.get("files", []) if f.get("uploadedBy") == user_id]
 
+    async def get_files_by_session(self, session_id: str) -> List[Dict]:
+        """Get all files linked to a specific chat session"""
+        if self.db is not None:
+            try:
+                cursor = self.db.files.find({"linkedChatId": session_id}, {"_id": 0}).sort("uploadedAt", -1)
+                return await cursor.to_list(length=None)
+            except Exception as e:
+                logger.error(f"Failed to get session files: {str(e)}")
+                return []
+        else:
+            return [f for f in self.in_memory_store.get("files", []) if f.get("linkedChatId") == session_id]
+
     async def get_file(self, file_id: str) -> Optional[Dict]:
         """Get file metadata by ID"""
         if self.db is not None:

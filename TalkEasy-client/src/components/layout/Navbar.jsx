@@ -111,6 +111,15 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
             <div className="flex items-center gap-1.5 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
               <span className="text-[10px] text-app-text-muted font-bold uppercase tracking-wider">Online</span>
+              
+              {activeChat?.toolType && (
+                <div className="flex items-center gap-1.5 ml-2">
+                  <div className="w-1 h-1 rounded-full bg-glass-border"></div>
+                  <span className="text-[10px] text-brand-blue dark:text-brand-cyan font-bold uppercase tracking-wider bg-brand-blue/10 px-1.5 py-0.5 rounded-sm">
+                    {activeChat.toolType.replace('_', ' ')} Mode
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>

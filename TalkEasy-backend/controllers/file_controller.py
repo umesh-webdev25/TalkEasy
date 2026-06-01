@@ -5,6 +5,7 @@ import uuid
 import logging
 from datetime import datetime
 import fitz  # PyMuPDF
+import docx  # python-docx
 from database.database_service import DatabaseService
 from services.llm_service import LLMService
 from middleware.jwt_middleware import get_current_user_id
@@ -68,6 +69,15 @@ async def upload_file(
                 doc.close()
             except Exception as pdf_err:
                 logger.error(f"Error extracting PDF text: {pdf_err}")
+                extracted_text = "Error extracting text."
+        elif file_ext == ".docx":
+            try:
+                # docx.Document requires a stream with read/seek, so we use io.BytesIO
+                import io
+                doc = docx.Document(io.BytesIO(content))
+                extracted_text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
+            except Exception as docx_err:
+                logger.error(f"Error extracting DOCX text: {docx_err}")
                 extracted_text = "Error extracting text."
         elif file_ext == ".txt":
             extracted_text = content.decode('utf-8', errors='ignore')

@@ -356,6 +356,7 @@ export const ChatProvider = ({ children }) => {
       settingsOpen,
       setSettingsOpen,
       files,
+      setFiles,
       handleUploadFile,
       deleteFile,
       openFile,
