@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MessageSquare, History, Star, FolderOpen, Wrench, Plus, Search, Trash, X, Menu } from 'lucide-react';
+import { MessageSquare, History, Star, FolderOpen, Wrench, Plus, Search, Trash, X, Menu, Sparkles } from 'lucide-react';
 import { useChat } from '../../context/ChatContext';
 import Button from '../ui/Button';
 
@@ -20,7 +20,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     { id: 'chats', label: 'Chats', icon: MessageSquare },
     // { id: 'history', label: 'History', icon: History },
     { id: 'starred', label: 'Starred', icon: Star },
-    { id: 'files', label: 'Files', icon: FolderOpen },
+    { id: 'image_generator', label: 'Generat', icon: Sparkles },
     { id: 'tools', label: 'Tools', icon: Wrench, badge: 'New' }
   ];
 
@@ -218,44 +218,23 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </>
           )}
 
-          {activeSidebarView === 'files' && (
+          {activeSidebarView === 'image_generator' && (
             <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
               <div className="px-2 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider">
-                Files
+                Image Generator
               </div>
-              <div className="mb-3 px-2">
-                <label className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan border border-brand-blue/20 rounded-xl cursor-pointer hover:bg-brand-blue/20 transition-all duration-300">
-                  <Plus size={16} />
-                  <span className="font-bold text-xs uppercase tracking-wide">Upload File</span>
-                  <input type="file" className="hidden" onChange={handleFileUpload} />
-                </label>
-              </div>
-              <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
-                {files && files.length > 0 ? (
-                  files.map((file, idx) => (
-                    <div key={idx} className="flex items-center gap-3 p-3 rounded-xl bg-surface-solid border border-glass-border">
-                      <div className="w-8 h-8 rounded-lg bg-brand-blue/10 text-brand-blue flex items-center justify-center">
-                        <FolderOpen size={14} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-app-text truncate">{file.fileName || file.name}</div>
-                        <div className="text-[10px] text-app-text-secondary">{file.fileType || file.type}</div>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          createNewChat(`Analyze this file: ${file.fileName || file.name}`, 'file_analyzer');
-                        }}
-                        className="p-1.5 text-app-text-muted hover:text-brand-blue transition-colors"
-                      >
-                        <MessageSquare size={14} />
-                      </button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-6 text-xs text-app-text-muted font-medium">
-                    No files uploaded
-                  </div>
-                )}
+              <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-brand-blue/10 text-brand-blue dark:text-brand-cyan flex items-center justify-center mb-4">
+                  <Sparkles size={32} />
+                </div>
+                <h3 className="text-sm font-bold text-app-text mb-2">Create AI Images</h3>
+                <p className="text-xs text-app-text-secondary mb-6">Describe what you want to see, and TalkEasy will generate it for you.</p>
+                <Button 
+                  onClick={() => handleToolClick('image_generator')}
+                  className="w-full py-2.5"
+                >
+                  <span className="font-bold text-xs uppercase tracking-wide">Start Generating</span>
+                </Button>
               </div>
             </div>
           )}

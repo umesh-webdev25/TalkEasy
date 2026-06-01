@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../context/ChatContext';
 import { useVoiceStream } from '../hooks/useVoiceStream';
-import { Send, Mic, Paperclip, Globe, Volume2, Copy, ThumbsUp, ThumbsDown, Check, X, ShieldAlert, Sparkles, Sliders, VolumeX, Eye } from 'lucide-react';
+import { Send, Mic, Paperclip, Globe, Volume2, Copy, ThumbsUp, ThumbsDown, Check, X, ShieldAlert, Sparkles, Sliders, VolumeX, Eye, Image, FileText } from 'lucide-react';
 import Button from '../components/ui/Button';
 import TypingIndicator from '../components/ui/TypingIndicator';
 import VoiceOrb from '../components/ui/VoiceOrb';
@@ -25,13 +25,17 @@ const ChatPage = () => {
     memory,
     setMemory,
     images,
-    setImages
+    setImages,
+    handleUploadFile
   } = useChat();
 
   const [inputValue, setInputValue] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const [speakingId, setSpeakingId] = useState(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const messagesEndRef = useRef(null);
+  const imageInputRef = useRef(null);
+  const docInputRef = useRef(null);
 
   const { isStreaming, isPlaying, transcript, aiResponse, startStreaming, stopStreaming, error: voiceError } = useVoiceStream();
 
@@ -96,6 +100,16 @@ const ChatPage = () => {
 
   const handleSuggestionClick = (suggestionText) => {
     sendMessage(suggestionText);
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const response = await handleUploadFile(file, activeChat?.id);
+      if (response && response.success) {
+        setShowAttachMenu(false);
+      }
+    }
   };
 
   return (
@@ -258,13 +272,53 @@ const ChatPage = () => {
 
             {/* Action items */}
             <div className="flex items-center gap-2 md:gap-3 text-app-text-muted border-l border-glass-border pl-3.5 shrink-0">
-              <button 
-                type="button" 
-                className="p-1.5 rounded-lg hover:text-app-text transition-colors cursor-pointer"
-                title="Attach file"
-              >
-                <Paperclip size={18} />
-              </button>
+              <div className="relative">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAttachMenu(!showAttachMenu)}
+                  className="p-1.5 rounded-lg hover:text-app-text transition-colors cursor-pointer"
+                  title="Attach file"
+                >
+                  <Paperclip size={18} />
+                </button>
+
+                {showAttachMenu && (
+                  <div className="absolute bottom-full mb-2 -left-12 bg-surface-solid border border-glass-border rounded-xl shadow-lg flex items-center gap-1 p-1.5 backdrop-blur-md z-50 animate-in fade-in zoom-in duration-200">
+                    <button
+                      type="button"
+                      onClick={() => { imageInputRef.current?.click(); setShowAttachMenu(false); }}
+                      className="flex items-center justify-center p-2 rounded-lg hover:bg-brand-blue/10 hover:text-brand-blue dark:hover:text-brand-cyan transition-colors group cursor-pointer"
+                      title="Upload Image"
+                    >
+                      <Image size={18} className="text-app-text-muted group-hover:text-brand-blue dark:group-hover:text-brand-cyan transition-colors" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { docInputRef.current?.click(); setShowAttachMenu(false); }}
+                      className="flex items-center justify-center p-2 rounded-lg hover:bg-brand-blue/10 hover:text-brand-blue dark:hover:text-brand-cyan transition-colors group cursor-pointer"
+                      title="Upload Document"
+                    >
+                      <FileText size={18} className="text-app-text-muted group-hover:text-brand-blue dark:group-hover:text-brand-cyan transition-colors" />
+                    </button>
+                  </div>
+                )}
+                
+                {/* Hidden File Inputs */}
+                <input
+                  type="file"
+                  ref={imageInputRef}
+                  onChange={handleFileChange}
+                  accept="image/png, image/jpeg, image/jpg"
+                  className="hidden"
+                />
+                <input
+                  type="file"
+                  ref={docInputRef}
+                  onChange={handleFileChange}
+                  accept=".pdf,.doc,.docx,.txt"
+                  className="hidden"
+                />
+              </div>
               
               <button 
                 type="button" 
