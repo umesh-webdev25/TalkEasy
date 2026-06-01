@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, LogIn, ArrowRight } from 'lucide-react';
+import { Mail, Lock, LogIn, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
+  const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -82,7 +82,8 @@ const LoginPage = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
+            <div className="relative">
+            <Input 
               id="email"
               label="Email Address"
               type="email"
@@ -93,16 +94,26 @@ const LoginPage = () => {
               required
             />
 
-            <Input
-              id="password"
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              icon={Lock}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            
+              <Input
+                id="password"
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                icon={Lock}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 mt-12"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
 
             <div className="flex items-center justify-between text-xs pt-1.5 pb-2">
               <label className="flex items-center gap-2 text-app-text-secondary cursor-pointer">

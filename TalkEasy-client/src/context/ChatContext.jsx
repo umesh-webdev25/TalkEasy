@@ -73,22 +73,30 @@ export const ChatProvider = ({ children }) => {
       if (data.success || Array.isArray(data)) {
         const historyData = Array.isArray(data) ? data : (data.messages || []);
         
-        const currentChat = chats.find(c => c.id === sessionId) || { id: sessionId, title: 'New Conversation' };
-        
-        setActiveChat({
-          ...currentChat,
-          messages: historyData.map((m, i) => ({
+        setActiveChat(prev => {
+          const formattedHistory = historyData.map((m, i) => ({
             id: `msg-${i}`,
             sender: m.role === 'user' ? 'user' : 'ai',
             text: m.content,
             time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
-          }))
+          }));
+
+          // Preserve optimistic messages if backend returns empty history for a newly created session
+          if (historyData.length === 0 && prev && prev.id === sessionId && prev.messages && prev.messages.length > 0) {
+            return prev;
+          }
+
+          return {
+            ...(prev && prev.id === sessionId ? prev : { id: sessionId, title: 'Chat Session' }),
+            id: sessionId,
+            messages: formattedHistory
+          };
         });
       }
     } catch (err) {
       console.error("Error loading history", err);
     }
-  }, [getHeaders, chats]);
+  }, [getHeaders]);
 
   useEffect(() => {
     if (activeChatId) {

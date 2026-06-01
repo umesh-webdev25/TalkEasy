@@ -107,81 +107,82 @@ const RegisterPage = () => {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            <Input
-              id="name"
-              label="Full Name"
-              type="text"
-              placeholder="John Doe"
-              icon={User}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+            <div className="relative">
+              <Input
+                id="name"
+                label="Full Name"
+                type="text"
+                placeholder="John Doe"
+                icon={User}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
 
-            <Input
-              id="email"
-              label="Email Address"
-              type="email"
-              placeholder="name@domain.com"
-              icon={Mail}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+              <Input
+                id="email"
+                label="Email Address"
+                type="email"
+                placeholder="name@domain.com"
+                icon={Mail}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              {/* Password Field */}
-              <div className="relative">
-                <Input
-                  id="password"
-                  label="Password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  icon={Lock}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+                {/* Password Field */}
+                <div className="relative">
+                  <Input
+                    id="password"
+                    label="Password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    icon={Lock}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
 
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
 
-              {/* Confirm Password Field */}
-              <div className="relative">
-                <Input
-                  id="confirmPassword"
-                  label="Confirm Password"
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  icon={Lock}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+                {/* Confirm Password Field */}
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    label="Confirm Password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    icon={Lock}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                  />
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowConfirmPassword(!showConfirmPassword)
-                  }
-                  className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
-                >
-                  {showConfirmPassword ? (
-                    <EyeOff size={18} />
-                  ) : (
-                    <Eye size={18} />
-                  )}
-                </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowConfirmPassword(!showConfirmPassword)
+                    }
+                    className="absolute right-3 top-[38px] text-gray-500 hover:text-gray-700"
+                  >
+                    {showConfirmPassword ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
-
             <div className="flex items-start gap-2 pt-1 pb-2">
               <input
                 id="agree"
