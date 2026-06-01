@@ -8,6 +8,8 @@ import {
   ChevronDown,
   Plus,
   FileUp,
+  Music,
+  Trash2,
 } from "lucide-react";
 
 import { useChat } from "../../context/ChatContext";
@@ -26,18 +28,17 @@ const AssistantPanel = () => {
     setImages,
     files,
     handleUploadFile,
+    deleteFile,
+    openFile,
   } = useChat();
 
   const fileInputRef = useRef(null);
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
 
     if (file) {
-      handleUploadFile({
-        name: file.name,
-        size: file.size,
-      });
+      await handleUploadFile(file);
     }
   };
 
@@ -248,20 +249,6 @@ const AssistantPanel = () => {
       <section className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <div className="flex items-center justify-between mb-4 shrink-0">
           <h2 className="font-extrabold text-sm text-app-text">Recent Files</h2>
-
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="p-1.5 rounded-lg text-brand-blue dark:text-brand-cyan hover:bg-surface-solid-hover transition-colors"
-          >
-            <Plus size={16} />
-          </button>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-          />
         </div>
 
         {/* Files List */}
@@ -269,7 +256,9 @@ const AssistantPanel = () => {
           {files.map((file, idx) => (
             <div
               key={idx}
+              onClick={() => openFile(file)}
               className="
+                group
                 flex items-center gap-3.5
                 p-3.5
                 bg-surface-solid
@@ -277,27 +266,44 @@ const AssistantPanel = () => {
                 rounded-2xl
                 shadow-sm
                 hover:shadow-md
+                hover:border-brand-blue/30
                 transition-all duration-300
                 cursor-pointer
+                relative
               "
             >
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${getFileColor(
-                  file.color,
-                )}`}
+                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
               >
-                <FileText size={20} />
+                {file.fileType === 'image' ? (
+                  <ImageIcon size={20} />
+                ) : file.fileType === 'audio' ? (
+                  <Music size={20} />
+                ) : (
+                  <FileText size={20} />
+                )}
               </div>
 
-              <div className="overflow-hidden flex-1 pr-2">
+              <div className="overflow-hidden flex-1 pr-8">
                 <p className="text-xs font-bold text-app-text truncate">
-                  {file.name}
+                  {file.fileName || file.name}
                 </p>
 
                 <p className="text-[10px] text-app-text-secondary font-semibold mt-0.5">
-                  {file.size} • {file.type}
+                  {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString() : 'Just now'} • {file.fileType || 'document'}
                 </p>
               </div>
+
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteFile(file.fileId);
+                }}
+                className="absolute right-3.5 p-1.5 rounded-lg text-app-text-muted hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                title="Delete File"
+              >
+                <Trash2 size={14} />
+              </button>
             </div>
           ))}
 

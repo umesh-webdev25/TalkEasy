@@ -661,6 +661,21 @@ class DatabaseService:
                     return f
             return None
 
+    async def delete_file(self, file_id: str, user_id: str) -> bool:
+        """Delete file metadata from the database"""
+        if self.db is not None:
+            try:
+                result = await self.db.files.delete_one({"fileId": file_id, "uploadedBy": user_id})
+                return result.deleted_count > 0
+            except Exception as e:
+                logger.error(f"Failed to delete file metadata: {str(e)}")
+                return False
+        else:
+            files = self.in_memory_store.get("files", [])
+            initial_len = len(files)
+            self.in_memory_store["files"] = [f for f in files if not (f.get("fileId") == file_id and f.get("uploadedBy") == user_id)]
+            return len(self.in_memory_store["files"]) < initial_len
+
     async def close(self):
         if self.client:
             self.client.close()

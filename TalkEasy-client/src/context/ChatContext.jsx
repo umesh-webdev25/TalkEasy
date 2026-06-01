@@ -287,6 +287,32 @@ export const ChatProvider = ({ children }) => {
     return { success: false };
   };
 
+  const deleteFile = async (fileId) => {
+    // Optimistically update
+    const prevFiles = [...files];
+    setFiles(prev => prev.filter(f => f.fileId !== fileId));
+    
+    try {
+      const response = await fetch(`${API_BASE}/agent/files/${fileId}`, {
+        method: "DELETE",
+        headers: getHeaders()
+      });
+      const data = await response.json();
+      if (!data.success) {
+        setFiles(prevFiles);
+      }
+      return data;
+    } catch (err) {
+      console.error("Delete error", err);
+      setFiles(prevFiles);
+      return { success: false };
+    }
+  };
+
+  const openFile = (file) => {
+    createNewChat(`Analyze this file: ${file.fileName}`, 'file_analyzer');
+  };
+
   const analyzeFile = async (fileId, query, sessionId = null) => {
     try {
       const response = await fetch(`${API_BASE}/agent/files/${fileId}/analyze`, {
@@ -331,6 +357,8 @@ export const ChatProvider = ({ children }) => {
       setSettingsOpen,
       files,
       handleUploadFile,
+      deleteFile,
+      openFile,
       analyzeFile,
       loadChats,
       loadFiles,

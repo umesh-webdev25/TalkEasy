@@ -31,6 +31,11 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("🚀 Starting Voice Agent application...")
     await initialize_all_services()
+    
+    # Bind services to app state for dependency injection
+    app.state.db_service = global_state.database_service
+    app.state.llm_service = global_state.llm_service
+    
     logger.info("✅ Application startup completed")
 
     yield
@@ -68,8 +73,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+import os
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Mount uploads directory so frontend can display images
+os.makedirs("uploads", exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Include Routers
 app.include_router(user_routes.router)
