@@ -9,6 +9,8 @@ import { useNavigate } from 'react-router-dom';
 import Dropdown from '../ui/Dropdown';
 import { getUserById } from '../../api/authApi';   // ← ID‑based API
 import ProfileModal from './ProfileModal';
+import GlobalSearchModal from '../ui/GlobalSearchModal';
+
 const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const { activeChat, setSettingsOpen } = useChat();
   const { isDark, toggleTheme } = useTheme();
@@ -16,6 +18,8 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const [userInitials, setUserInitials] = useState('');
   const [user, setUser] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  
   // -----------------------------------------------------------------
   // 1️⃣ Fetch the full user profile once on mount (via ID)
   // -----------------------------------------------------------------
@@ -105,7 +109,10 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
       {/* Right‑hand controls */}
       <div className="flex items-center gap-1.5 md:gap-3">
         {/* Search button */}
-        <button className="p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors">
+        <button 
+          onClick={() => setIsSearchOpen(true)}
+          className="p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
+        >
           <Search size={18} />
         </button>
 
@@ -148,6 +155,11 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
         onClose={() => setIsProfileOpen(false)} 
         user={user} 
         userInitials={userInitials} 
+      />
+
+      <GlobalSearchModal 
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
       />
     </header>
   );

@@ -514,6 +514,93 @@ class DatabaseService:
                 continue
         return False
     
+    async def search_messages(self, query: str, session_id: Optional[str] = None, user_id: Optional[str] = None) -> List[Dict]:
+        """Search messages using regex across chat histories"""
+        if not query:
+            return []
+            
+        if self.db is not None:
+            try:
+                # Build match conditions for the document
+                match_conditions = {}
+                if session_id:
+                    match_conditions["session_id"] = session_id
+                if user_id:
+                    match_conditions["user_id"] = user_id
+                    
+                pipeline = []
+                if match_conditions:
+                    pipeline.append({"$match": match_conditions})
+                    
+                # Unwind the messages array
+                pipeline.append({"$unwind": "$messages"})
+                
+                # Match the text using case-insensitive regex
+                pipeline.append({
+                    "$match": {
+                        "messages.content": {"$regex": query, "$options": "i"}
+                    }
+                })
+                
+                # Project the fields we need
+                pipeline.append({
+                    "$project": {
+                        "_id": 0,
+                        "session_id": 1,
+                        "message": "$messages",
+                        "created_at": 1
+                    }
+                })
+                
+                # Sort by newest first
+                pipeline.append({"$sort": {"message.timestamp": -1}})
+                
+                # Limit to 50 results
+                pipeline.append({"$limit": 50})
+                
+                cursor = self.db.chat_sessions.aggregate(pipeline)
+                results = await cursor.to_list(length=50)
+                return results
+            except Exception as e:
+                logger.error(f"Failed to search messages in MongoDB: {str(e)}")
+                return []
+        else:
+            # Fallback to in-memory store
+            results = []
+            lower_query = query.lower()
+            
+            for sid, sess in self.in_memory_store.items():
+                if session_id and sid != session_id:
+                    continue
+                if isinstance(sess, dict):
+                    if user_id and sess.get("user_id") != user_id:
+                        continue
+                    messages = sess.get("messages", [])
+                    for msg in messages:
+                        if lower_query in msg.get("content", "").lower():
+                            results.append({
+                                "session_id": sid,
+                                "message": msg,
+                                "created_at": sess.get("created_at")
+                            })
+                else:
+                    messages = sess or []
+                    for msg in messages:
+                        if lower_query in msg.get("content", "").lower():
+                            results.append({
+                                "session_id": sid,
+                                "message": msg,
+                                "created_at": None
+                            })
+                            
+            # Sort manually (assuming timestamp exists, otherwise keep order)
+            try:
+                results.sort(key=lambda x: x["message"].get("timestamp", datetime.min), reverse=True)
+            except:
+                pass
+                
+            return results[:50]
+
     async def close(self):
         if self.client:
             self.client.close()

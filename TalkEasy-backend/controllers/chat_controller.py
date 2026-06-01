@@ -111,6 +111,33 @@ async def get_all_chat_histories_endpoint(
         logger.error(f"Error getting all chat histories: {str(e)}")
         return {"success": False, "chat_histories": [], "error": str(e)}
 
+async def search_chat_messages(
+    query: str,
+    session_id: Optional[str] = None,
+    database_service: DatabaseService = Depends(get_database_service),
+    user_id: Optional[str] = Depends(get_current_user_id)
+):
+    try:
+        if not database_service:
+            return {"success": False, "results": [], "error": "Database service not available"}
+            
+        results = await database_service.search_messages(query, session_id, user_id)
+        
+        # Normalize timestamps in results
+        for r in results:
+            msg = r.get("message", {})
+            ts = msg.get("timestamp")
+            if hasattr(ts, "isoformat"):
+                msg["timestamp"] = ts.isoformat()
+            ca = r.get("created_at")
+            if hasattr(ca, "isoformat"):
+                r["created_at"] = ca.isoformat()
+                
+        return {"success": True, "results": results, "count": len(results)}
+    except Exception as e:
+        logger.error(f"Error searching chat messages: {str(e)}")
+        return {"success": False, "results": [], "error": str(e)}
+
 async def clear_session_history(
     session_id: str = Path(..., description="Session ID"),
     database_service: DatabaseService = Depends(get_database_service)

@@ -41,3 +41,12 @@ export const getAllChats = async () => {
 
   return response.data;
 };
+
+export const searchChatMessages = async (query, sessionId = null) => {
+  let url = `/agent/chat/search?query=${encodeURIComponent(query)}`;
+  if (sessionId) {
+    url += `&session_id=${encodeURIComponent(sessionId)}`;
+  }
+  const response = await api.get(url);
+  return response.data;
+};
