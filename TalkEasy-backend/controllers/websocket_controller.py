@@ -96,98 +96,106 @@ async def audio_stream_websocket(websocket: WebSocket):
         }
         await manager.send_personal_message(json.dumps(welcome_message), websocket)
         
-        with open(audio_filepath, "wb") as audio_file:
-            chunk_count = 0
-            total_bytes = 0
-            
-            while True:
-                try:
-                    message = await websocket.receive()
-                    
-                    if "text" in message:
-                        text_data = message["text"]
-                        
-                        try:
-                            command_data = json.loads(text_data)
-                            if isinstance(command_data, dict):
-                                if command_data.get("type") == "session_id":
-                                    new_session_id = command_data.get("session_id")
-                                    if new_session_id and new_session_id != session_id:
-                                        logger.info(f"Updating session_id from {session_id} to {new_session_id}")
-                                        session_id = new_session_id
-                                        audio_filename = f"streamed_audio_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
-                                        audio_filepath = os.path.join("streamed_audio", audio_filename)
-                                elif command_data.get("type") == "web_search_toggle":
-                                    web_search_enabled = command_data.get("enabled", False)
-                                    logger.info(f"Web search {'enabled' if web_search_enabled else 'disabled'}")
-                                continue
-                        except json.JSONDecodeError:
-                            pass
-                        
-                        command = text_data
-                        
-                        if command == "start_streaming":
-                            response = {
-                                "type": "command_response",
-                                "message": "Ready to receive audio chunks with real-time transcription",
-                                "status": "streaming_ready"
-                            }
-                            await manager.send_personal_message(json.dumps(response), websocket)
-                            
-                        elif command == "stop_streaming":
-                            response = {
-                                "type": "command_response",
-                                "message": "Stopping audio stream",
-                                "status": "streaming_stopped"
-                            }
-                            await manager.send_personal_message(json.dumps(response), websocket)
-                            
-                            if global_state.assemblyai_streaming_service:
-                                async def safe_stop_callback(msg):
-                                    if manager.is_connected(websocket):
-                                        return await manager.send_personal_message(json.dumps(msg), websocket)
-                                    return None
-                            break
-                    
-                    elif "bytes" in message:
-                        audio_chunk = message["bytes"]
-                        chunk_count += 1
-                        total_bytes += len(audio_chunk)
-                        
-                        audio_file.write(audio_chunk)
-                        
-                        if (global_state.assemblyai_streaming_service and 
-                            is_websocket_active and 
-                            assemblyai_ready and 
-                            global_state.assemblyai_streaming_service.is_ready_for_audio()):
-                            await global_state.assemblyai_streaming_service.send_audio_chunk(audio_chunk)
-                        
-                        if chunk_count % 50 == 0:
-                            chunk_response = {
-                                "type": "audio_chunk_received",
-                                "chunk_number": chunk_count,
-                                "total_bytes": total_bytes,
-                                "transcription_active": assemblyai_ready and global_state.assemblyai_streaming_service.is_active() if global_state.assemblyai_streaming_service else False,
-                                "timestamp": datetime.now().isoformat()
-                            }
-                            await manager.send_personal_message(json.dumps(chunk_response), websocket)
+        try:
+            with open(audio_filepath, "wb") as audio_file:
+                chunk_count = 0
+                total_bytes = 0
                 
-                except WebSocketDisconnect:
-                    break
+                while True:
+                    try:
+                        message = await websocket.receive()
+                        
+                        if "text" in message:
+                            text_data = message["text"]
+                            
+                            try:
+                                command_data = json.loads(text_data)
+                                if isinstance(command_data, dict):
+                                    if command_data.get("type") == "session_id":
+                                        new_session_id = command_data.get("session_id")
+                                        if new_session_id and new_session_id != session_id:
+                                            logger.info(f"Updating session_id from {session_id} to {new_session_id}")
+                                            session_id = new_session_id
+                                            audio_filename = f"streamed_audio_{session_id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.wav"
+                                            audio_filepath = os.path.join("streamed_audio", audio_filename)
+                                    elif command_data.get("type") == "web_search_toggle":
+                                        web_search_enabled = command_data.get("enabled", False)
+                                        logger.info(f"Web search {'enabled' if web_search_enabled else 'disabled'}")
+                                    continue
+                            except json.JSONDecodeError:
+                                pass
+                            
+                            command = text_data
+                            
+                            if command == "start_streaming":
+                                response = {
+                                    "type": "command_response",
+                                    "message": "Ready to receive audio chunks with real-time transcription",
+                                    "status": "streaming_ready"
+                                }
+                                await manager.send_personal_message(json.dumps(response), websocket)
+                                
+                            elif command == "stop_streaming":
+                                response = {
+                                    "type": "command_response",
+                                    "message": "Stopping audio stream",
+                                    "status": "streaming_stopped"
+                                }
+                                await manager.send_personal_message(json.dumps(response), websocket)
+                                
+                                if global_state.assemblyai_streaming_service:
+                                    async def safe_stop_callback(msg):
+                                        if manager.is_connected(websocket):
+                                            return await manager.send_personal_message(json.dumps(msg), websocket)
+                                        return None
+                                break
+                        
+                        elif "bytes" in message:
+                            audio_chunk = message["bytes"]
+                            chunk_count += 1
+                            total_bytes += len(audio_chunk)
+                            
+                            audio_file.write(audio_chunk)
+                            
+                            if (global_state.assemblyai_streaming_service and 
+                                is_websocket_active and 
+                                assemblyai_ready and 
+                                global_state.assemblyai_streaming_service.is_ready_for_audio()):
+                                await global_state.assemblyai_streaming_service.send_audio_chunk(audio_chunk)
+                            
+                            if chunk_count % 50 == 0:
+                                chunk_response = {
+                                    "type": "audio_chunk_received",
+                                    "chunk_number": chunk_count,
+                                    "total_bytes": total_bytes,
+                                    "transcription_active": assemblyai_ready and global_state.assemblyai_streaming_service.is_active() if global_state.assemblyai_streaming_service else False,
+                                    "timestamp": datetime.now().isoformat()
+                                }
+                                await manager.send_personal_message(json.dumps(chunk_response), websocket)
+                    
+                    except WebSocketDisconnect:
+                        break
+                    except Exception as e:
+                        logger.error(f"Error processing audio chunk: {e}")
+                        break
+            
+            final_response = {
+                "type": "audio_stream_complete",
+                "message": f"Audio stream completed. Total chunks: {chunk_count}, Total bytes: {total_bytes}",
+                "session_id": session_id,
+                "audio_filename": audio_filename,
+                "total_chunks": chunk_count,
+                "total_bytes": total_bytes,
+                "timestamp": datetime.now().isoformat()
+            }
+            await manager.send_personal_message(json.dumps(final_response), websocket)
+        finally:
+            if os.path.exists(audio_filepath):
+                try:
+                    os.remove(audio_filepath)
+                    logger.info(f"🧹 Cleaned up temporary audio file: {audio_filepath}")
                 except Exception as e:
-                    logger.error(f"Error processing audio chunk: {e}")
-                    break
-        
-        final_response = {
-            "type": "audio_stream_complete",
-            "message": f"Audio stream completed. Total chunks: {chunk_count}, Total bytes: {total_bytes}",
-            "session_id": session_id,
-            "audio_filename": audio_filename,
-            "total_chunks": chunk_count,
-            "total_bytes": total_bytes,
-            "timestamp": datetime.now().isoformat()
-        }
-        await manager.send_personal_message(json.dumps(final_response), websocket)
+                    logger.error(f"⚠️ Failed to cleanup audio file {audio_filepath}: {e}")
         
     except WebSocketDisconnect:
         is_websocket_active = False

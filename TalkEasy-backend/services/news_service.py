@@ -39,11 +39,12 @@ class NewsService:
             logger.error(f"Error parsing RSS feed: {str(e)}")
             return []
 
-    def get_news_headlines(self, category: str = "general") -> dict:
+    async def get_news_headlines(self, category: str = "general") -> dict:
         """Fetch current news headlines for a given category using free RSS feeds."""
         try:
             # Use direct RSS feed parsing with feedparser library
             import feedparser
+            import asyncio
             
             rss_feeds = {
                 "general": "https://feeds.bbci.co.uk/news/rss.xml",
@@ -57,8 +58,9 @@ class NewsService:
             
             rss_url = rss_feeds.get(category, rss_feeds["general"])
             
-            # Parse the RSS feed
-            feed = feedparser.parse(rss_url)
+            # Parse the RSS feed asynchronously so we don't block the event loop
+            loop = asyncio.get_running_loop()
+            feed = await loop.run_in_executor(None, feedparser.parse, rss_url)
             
             # Format the response to match the expected structure
             articles = []

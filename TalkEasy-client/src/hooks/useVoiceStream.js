@@ -67,6 +67,7 @@ export const useVoiceStream = () => {
           } else if (data.type === 'tts_audio_chunk') {
             queueAudioChunk(data.audio_base64, data.is_final);
           } else if (data.type === 'llm_streaming_complete') {
+            queueAudioChunk('', true);
             if (activeChatId && appendMessagesLocal) {
               const newMsgs = [];
               if (transcriptRef.current) {

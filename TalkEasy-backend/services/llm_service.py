@@ -200,7 +200,7 @@ Summarize the key information and cite relevant sources if appropriate."""
                 logger.info(f"📰 Fetching news for category: {category}")
                 news_service = skills_manager.get_skill("news")
                 if news_service:
-                    news_data = news_service.get_news_headlines(category)
+                    news_data = await news_service.get_news_headlines(category)
                     if "error" not in news_data and "articles" in news_data and news_data["articles"]:
                         return self._format_news_response(news_data, category)
                     else:
@@ -275,7 +275,7 @@ Please provide a specific, helpful answer to the user's current question. Keep y
                  logger.info(f"📰 Fetching news for category: {category}")
                  news_service = skills_manager.get_skill("news")
                  if news_service:
-                     news_data = news_service.get_news_headlines(category)
+                     news_data = await news_service.get_news_headlines(category)
                      if "error" not in news_data and "articles" in news_data and news_data["articles"]:
                          news_response = self._format_news_response(news_data, category)
                          # Yield the news response as a single chunk

@@ -35,7 +35,7 @@ class MurfWebSocketService:
             
         self._connecting = True
         try:
-            connection_url = f"{self.ws_url}?api-key={self.api_key}&sample_rate=44100&channel_type=MONO&format=WAV"
+            connection_url = f"{self.ws_url}?api-key={self.api_key}&sample_rate=44100&channel_type=MONO&format=MP3"
             self.websocket = await websockets.connect(connection_url)
             self.is_connected = True
             logger.info("✅ Connected to Murf WebSocket")
@@ -106,35 +106,51 @@ class MurfWebSocketService:
             raise Exception("WebSocket not connected. Call connect() first.")
         
         try:
-            accumulated_text = ""
-            chunk_count = 0
-            
-            # Collect all text chunks first
-            text_chunks = []
-            async for text_chunk in text_stream:
-                if text_chunk:
-                    text_chunks.append(text_chunk)
-                    accumulated_text += text_chunk
-                    chunk_count += 1
-            
-            logger.info(f"Collected {chunk_count} text chunks, total length: {len(accumulated_text)}")
-            
-            # Send all text in one message (better for TTS quality)
-            text_msg = {
-                "context_id": self.static_context_id,
-                "text": accumulated_text,
-                "end": True  # Close context immediately for better audio quality
-            }
-            
-            logger.info(f"Sending complete text ({len(accumulated_text)} chars): {accumulated_text[:100]}...")
-            await self.websocket.send(json.dumps(text_msg))
+            async def send_text_task():
+                sentence_buffer = ""
+                try:
+                    async for text_chunk in text_stream:
+                        if text_chunk:
+                            sentence_buffer += text_chunk
+                            if any(p in sentence_buffer for p in ['. ', '? ', '! ', '\n']):
+                                text_msg = {
+                                    "context_id": self.static_context_id,
+                                    "text": sentence_buffer,
+                                    "end": False
+                                }
+                                await self.websocket.send(json.dumps(text_msg))
+                                logger.info(f"Sent sentence to TTS: {sentence_buffer[:50]}...")
+                                sentence_buffer = ""
+                    
+                    if sentence_buffer:
+                        await self.websocket.send(json.dumps({
+                            "context_id": self.static_context_id,
+                            "text": sentence_buffer,
+                            "end": True
+                        }))
+                        logger.info("Sent final text chunk to TTS")
+                    else:
+                        await self.websocket.send(json.dumps({
+                            "context_id": self.static_context_id,
+                            "text": " ",
+                            "end": True
+                        }))
+                except Exception as e:
+                    logger.error(f"Error sending text stream: {e}")
+
+            # Start sending text in background
+            send_task = asyncio.create_task(send_text_task())
             
             # Now listen for audio responses
-            async for audio_response in self._listen_for_audio():
-                yield audio_response
-                # Break on final audio chunk
-                if audio_response.get("type") == "audio_chunk" and audio_response.get("is_final"):
-                    break
+            try:
+                async for audio_response in self._listen_for_audio():
+                    yield audio_response
+                    # Break on final audio chunk
+                    if audio_response.get("type") == "audio_chunk" and audio_response.get("is_final"):
+                        break
+            finally:
+                if not send_task.done():
+                    send_task.cancel()
             
         except Exception as e:
             logger.error(f"Error in stream_text_to_audio: {str(e)}")
