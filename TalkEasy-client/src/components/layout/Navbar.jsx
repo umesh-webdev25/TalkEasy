@@ -82,44 +82,21 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
           </button>
         )}
 
-        {/* Conversation details */}
+        {/* Assistant details */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-blue/10 flex items-center justify-center text-brand-blue dark:text-brand-cyan shadow-sm border border-brand-blue/15">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
+          <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm">
+            <img src="/robot.png" alt="Assistant" className="w-full h-full object-cover" />
           </div>
 
-          <div>
-            <div className="flex items-center gap-1 cursor-pointer">
-              <h1 className="font-extrabold text-app-text text-sm md:text-base truncate max-w-[120px] xs:max-w-[180px] sm:max-w-xs">
-                {activeChat ? activeChat.title : 'New Conversation'}
-              </h1>
-              {activeChat && (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleStarChat(activeChat.id, !activeChat.isStarred);
-                  }}
-                  className={`p-1 rounded-md transition-colors ${activeChat.isStarred ? 'text-yellow-400' : 'text-app-text-muted hover:text-yellow-400'}`}
-                >
-                  <Star size={14} fill={activeChat.isStarred ? "currentColor" : "none"} />
-                </button>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-              <span className="text-[10px] text-app-text-muted font-bold uppercase tracking-wider">Online</span>
-              
-              {activeChat?.toolType && (
-                <div className="flex items-center gap-1.5 ml-2">
-                  <div className="w-1 h-1 rounded-full bg-glass-border"></div>
-                  <span className="text-[10px] text-brand-blue dark:text-brand-cyan font-bold uppercase tracking-wider bg-brand-blue/10 px-1.5 py-0.5 rounded-sm">
-                    {activeChat.toolType.replace('_', ' ')} Mode
-                  </span>
-                </div>
-              )}
+          <div className="flex flex-col">
+            <h1 className="font-extrabold text-app-text text-sm md:text-base flex items-center gap-2">
+              TalkEasy Assistant
+            </h1>
+            <div className="flex items-center gap-2 text-[10px] font-bold mt-0.5">
+              <span className="flex items-center gap-1 text-green-500">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span> Connected
+              </span>
+              <span className="text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wider border border-brand-blue/20">GPT-5.5</span>
             </div>
           </div>
         </div>

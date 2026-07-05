@@ -105,7 +105,7 @@ const AssistantPanel = () => {
     <aside
       className="
         hidden lg:flex
-        w-80
+        w-70
         border-l border-glass-border
         bg-glass-bg
         flex-col
@@ -127,44 +127,18 @@ const AssistantPanel = () => {
           </button>
         </div>
 
-        <div className="relative group">
-          <select
-            value={assistantMode}
-            onChange={handlePersonaChange}
-            className="
-              w-full
-              bg-surface-solid
-              border border-glass-border
-              rounded-2xl
-              p-4
-              pr-10
-              shadow-sm
-              appearance-none
-              outline-none
-              font-semibold
-              text-xs
-              uppercase
-              tracking-wider
-              text-app-text
-              focus:border-brand-blue/30
-              cursor-pointer
-            "
-          >
-            {assistantModes.map((mode) => (
-              <option key={mode.name} value={mode.name}>
-                {mode.name}
-              </option>
-            ))}
-          </select>
-
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-app-text-muted">
-            <ChevronDown size={16} />
+        <div className="bg-surface-solid border border-glass-border rounded-2xl p-5 shadow-sm text-center flex flex-col items-center">
+          <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm mb-3">
+            <img src="/robot.png" alt="Assistant" className="w-full h-full object-cover" />
           </div>
+          <h3 className="font-bold text-app-text text-base mb-1">TalkEasy Assistant</h3>
+          <span className="text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-blue/20 mb-3">
+            Professional
+          </span>
+          <p className="text-xs text-app-text-secondary leading-relaxed">
+            Your reliable AI partner for productivity and creativity.
+          </p>
         </div>
-
-        <p className="mt-2.5 px-1 text-[11px] text-app-text-secondary leading-normal font-medium">
-          {assistantModes.find((m) => m.name === assistantMode)?.desc}
-        </p>
       </section>
 
       {/* Capability Toggles */}
@@ -216,6 +190,22 @@ const AssistantPanel = () => {
                 className={`w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 ${
                   memory ? "right-0.8" : "left-0.8"
                 }`}
+              />
+            </button>
+          </div>
+
+          {/* Reasoning */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3 text-app-text-secondary font-medium text-sm">
+              <Sparkles size={18} className="text-app-text-muted" />
+              <span>Reasoning</span>
+            </div>
+
+            <button
+              className="w-9 h-5 rounded-full relative flex items-center transition-colors duration-300 border border-glass-border bg-brand-blue border-brand-blue"
+            >
+              <div
+                className="w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 right-0.8"
               />
             </button>
           </div>
@@ -330,6 +320,33 @@ const AssistantPanel = () => {
               </button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Conversation Stats Section */}
+      <section className="mt-4 pt-4 border-t border-glass-border shrink-0">
+        <h3 className="font-bold text-xs text-app-text-muted mb-4">
+          Conversation Stats
+        </h3>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
+            <span className="text-brand-blue font-extrabold text-lg">128</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Messages</span>
+          </div>
+          <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
+            <span className="text-brand-blue font-extrabold text-lg">12</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Files</span>
+          </div>
+          <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
+            <span className="text-brand-blue font-extrabold text-lg">5.2K</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Tokens</span>
+          </div>
+        </div>
+        <div className="mt-3 flex items-center gap-1.5 text-[10px] text-app-text-muted font-semibold">
+          <div className="w-1.5 h-1.5 rounded-full border border-app-text-muted flex items-center justify-center">
+             <div className="w-0.5 h-0.5 bg-app-text-muted rounded-full"></div>
+          </div>
+          Today, 10:30 PM
         </div>
       </section>
     </aside>
