@@ -238,7 +238,20 @@ async def chat_with_agent_text(
         if database_service:
             await database_service.add_message_to_history(session_id, "user", text, user_id=user_id)
             
-        response_text = await llm_service.generate_response(final_text, chat_history, system_prompt_override=system_prompt_override)
+        try:
+            response_text = await llm_service.generate_response(final_text, chat_history, system_prompt_override=system_prompt_override)
+        except Exception as llm_error:
+            logger.error(f"LLM generation failed: {llm_error}")
+            response_text = "I'm sorry, I am currently experiencing API limits or technical difficulties. Please try again later."
+            if database_service:
+                await database_service.add_message_to_history(session_id, "assistant", response_text, user_id=user_id)
+            return {
+                "success": True,  # Return true so frontend displays the AI error message
+                "message": str(llm_error),
+                "llm_response": response_text,
+                "session_id": session_id,
+                "error": True
+            }
         
         if database_service:
             await database_service.add_message_to_history(session_id, "assistant", response_text, user_id=user_id)
@@ -366,6 +379,12 @@ async def chat_with_agent(
             error_message = get_fallback_message(ErrorType.GENERAL_ERROR)
         
         fallback_audio = await tts_service.generate_fallback_audio(error_message) if tts_service else None
+        
+        if database_service and transcribed_text:
+            try:
+                await database_service.add_message_to_history(session_id, "assistant", error_message, user_id=user_id)
+            except Exception as db_err:
+                logger.error(f"Failed to save fallback error to DB: {db_err}")
         
         return VoiceChatResponse(
             success=False,

@@ -174,21 +174,29 @@ async def audio_stream_websocket(websocket: WebSocket):
                                 await manager.send_personal_message(json.dumps(chunk_response), websocket)
                     
                     except WebSocketDisconnect:
+                        is_websocket_active = False
                         break
                     except Exception as e:
+                        if 'Cannot call "receive" once a disconnect message has been received' in str(e):
+                            is_websocket_active = False
+                            break
                         logger.error(f"Error processing audio chunk: {e}")
                         break
             
-            final_response = {
-                "type": "audio_stream_complete",
-                "message": f"Audio stream completed. Total chunks: {chunk_count}, Total bytes: {total_bytes}",
-                "session_id": session_id,
-                "audio_filename": audio_filename,
-                "total_chunks": chunk_count,
-                "total_bytes": total_bytes,
-                "timestamp": datetime.now().isoformat()
-            }
-            await manager.send_personal_message(json.dumps(final_response), websocket)
+            if is_websocket_active:
+                final_response = {
+                    "type": "audio_stream_complete",
+                    "message": f"Audio stream completed. Total chunks: {chunk_count}, Total bytes: {total_bytes}",
+                    "session_id": session_id,
+                    "audio_filename": audio_filename,
+                    "total_chunks": chunk_count,
+                    "total_bytes": total_bytes,
+                    "timestamp": datetime.now().isoformat()
+                }
+                try:
+                    await manager.send_personal_message(json.dumps(final_response), websocket)
+                except Exception as e:
+                    logger.error(f"Failed to send final stream message: {e}")
         finally:
             if os.path.exists(audio_filepath):
                 try:

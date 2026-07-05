@@ -343,10 +343,10 @@ const AssistantPanel = () => {
           </div>
         </div>
         <div className="mt-3 flex items-center gap-1.5 text-[10px] text-app-text-muted font-semibold">
-          <div className="w-1.5 h-1.5 rounded-full border border-app-text-muted flex items-center justify-center">
-             <div className="w-0.5 h-0.5 bg-app-text-muted rounded-full"></div>
+          <div className="flex items-center gap-1">
+            <Sparkles size={10} className="text-app-text-muted" />
+            <span>AI Powered</span>
           </div>
-          Today, 10:30 PM
         </div>
       </section>
     </aside>

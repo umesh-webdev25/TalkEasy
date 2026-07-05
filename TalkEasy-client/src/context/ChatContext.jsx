@@ -93,13 +93,15 @@ export const ChatProvider = ({ children }) => {
         const historyData = Array.isArray(data) ? data : (data.messages || []);
         
         setActiveChat(prev => {
-          const formattedHistory = historyData.map((m, i) => ({
-            id: `msg-${i}`,
-            sender: m.role === 'user' ? 'user' : 'ai',
-            text: m.content,
-            time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
-          }));
-
+          const formattedHistory = historyData.map((m, i) => {
+            const timeVal = m.timestamp ? new Date(m.timestamp).getTime() : i;
+            return {
+              id: `msg-${timeVal}-${m.role}-${i}`,
+              sender: m.role === 'user' ? 'user' : 'ai',
+              text: m.content,
+              time: m.timestamp ? new Date(m.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+            };
+          });
           // Preserve optimistic messages if backend returns empty history for a newly created session
           if (historyData.length === 0 && prev && prev.id === sessionId && prev.messages && prev.messages.length > 0) {
             return prev;
@@ -244,9 +246,20 @@ export const ChatProvider = ({ children }) => {
         setChats(prev => prev.map(c => c.id === sessionId ? { ...c, preview: data.llm_response.substring(0, 30) + '...' } : c));
       } else if (response.status === 401) {
         navigate('/login');
+      } else {
+        // Revert optimistic message if backend returns an explicit failure without an LLM response
+        setActiveChat(prev => prev && prev.id === sessionId ? {
+          ...prev,
+          messages: prev.messages.filter(m => m.id !== userMsg.id)
+        } : prev);
       }
     } catch (err) {
       console.error("Error sending message", err);
+      // Revert optimistic message on network error
+      setActiveChat(prev => prev && prev.id === sessionId ? {
+        ...prev,
+        messages: prev.messages.filter(m => m.id !== userMsg.id)
+      } : prev);
     } finally {
       setTyping(false);
     }
