@@ -5,11 +5,11 @@
 
 @theme {
   --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
-  
+
   --color-brand-blue: #0066ff;
   --color-brand-cyan: #00d1ff;
   --color-brand-violet: #8447ff;
-  
+
   /* Theme mapping variables */
   --color-app-bg: var(--bg-app);
   --color-app-text: var(--text-primary);
@@ -23,7 +23,7 @@
   --color-surface-solid: var(--surface-solid);
   --color-surface-solid-hover: var(--surface-solid-hover);
   --color-border-solid: var(--border-solid);
-  
+
   --animate-pulse-glow: pulse-glow 2s infinite ease-in-out;
   --animate-sine-flow: sine-flow 3s infinite linear;
   --animate-float: float 6s infinite ease-in-out;
@@ -31,10 +31,13 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 15px rgba(0, 102, 255, 0.4), inset 0 0 8px rgba(0, 209, 255, 0.2);
     transform: scale(1);
   }
+
   50% {
     box-shadow: 0 0 30px rgba(0, 102, 255, 0.8), inset 0 0 15px rgba(0, 209, 255, 0.4);
     transform: scale(1.05);
@@ -45,24 +48,31 @@
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(-10px) rotate(2deg);
   }
 }
 
 @keyframes orb-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     filter: drop-shadow(0 0 20px rgba(0, 102, 255, 0.3)) drop-shadow(0 0 40px rgba(0, 209, 255, 0.2));
   }
+
   50% {
     filter: drop-shadow(0 0 45px rgba(0, 102, 255, 0.7)) drop-shadow(0 0 70px rgba(132, 71, 255, 0.5));
   }
@@ -102,13 +112,22 @@
   box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.15), 0 0 20px rgba(0, 102, 255, 0.35);
 }
 
-.custom-scrollbar {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 
-.custom-scrollbar::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Theme definition */
@@ -118,20 +137,20 @@
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
-  
+
   --glass-bg: rgba(255, 255, 255, 0.95);
   --glass-bg-hover: rgba(255, 255, 255, 1);
   --glass-input-bg: rgba(255, 255, 255, 0.95);
   --glass-border: rgba(226, 232, 240, 0.4);
   --glass-border-hover: rgba(203, 213, 225, 0.6);
-  
+
   --surface-solid: #ffffff;
   --surface-solid-hover: #f8fafc;
   --border-solid: #e2e8f0;
-  
+
   --scrollbar-thumb: #cbd5e1;
   --scrollbar-thumb-hover: #94a3b8;
-  
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
@@ -143,20 +162,20 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
   --glass-bg: rgba(13, 16, 22, 0.7);
   --glass-bg-hover: rgba(21, 26, 35, 0.8);
   --glass-input-bg: rgba(9, 11, 15, 0.85);
   --glass-border: rgba(255, 255, 255, 0.05);
   --glass-border-hover: rgba(255, 255, 255, 0.1);
-  
+
   --surface-solid: #0d1016;
   --surface-solid-hover: #181c25;
   --border-solid: #1a1e27;
-  
+
   --scrollbar-thumb: #1e293b;
   --scrollbar-thumb-hover: #334155;
-  
+
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -4px rgba(0, 0, 0, 0.5);
@@ -167,4 +186,52 @@ body {
   color: var(--text-primary);
   font-family: var(--font-sans);
   transition: background-color 0.35s cubic-bezier(0.4, 0, 0.2, 1), color 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.6s ease-out both;
 }
