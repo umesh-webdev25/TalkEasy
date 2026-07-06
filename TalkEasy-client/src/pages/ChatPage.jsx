@@ -211,20 +211,8 @@ const ChatPage = () => {
               >
                 {/* AI Avatar */}
                 {!isUser && (
-                  <div className="w-9 h-9 rounded-xl bg-brand-blue flex-shrink-0 flex items-center justify-center text-white active-glow">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                      />
-                    </svg>
+                  <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-transparent overflow-hidden">
+                    <img src="/robot.png" alt="AI" className="w-full h-full object-contain" />
                   </div>
                 )}
 
