@@ -26,6 +26,12 @@ import {
   Palette,
   CircleHelp,
   Check,
+  Languages,
+  NotebookPen,
+  Mail,
+  Code2,
+  FileSearch,
+  FileText,
 } from "lucide-react";
 import { useChat } from "../../context/ChatContext";
 import Button from "../ui/Button";
@@ -171,7 +177,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <div className="w-10 h-9 rounded-full bg-brand-blue/10 flex flex-shrink-0 items-center justify-center text-sm font-bold text-brand-blue border border-glass-border">
         {userInitials || "U"}
       </div>
-      <div className={`flex-col text-left flex-1 min-w-0 transition-opacity duration-300 ${!isOpen ? "hidden" : "flex"}`}>
+      <div
+        className={`flex-col text-left flex-1 min-w-0 transition-opacity duration-300 ${!isOpen ? "hidden" : "flex"}`}
+      >
         <span className="text-sm font-bold text-app-text truncate block">
           {user
             ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
@@ -506,26 +514,78 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pb-4">
                 {[
-                  { id: "translator", name: "Translator", desc: "Translate text accurately" },
-                  { id: "meeting_notes", name: "Meeting Notes", desc: "Summarize meetings" },
-                  { id: "email_writer", name: "Email Writer", desc: "Professional emails" },
-                  { id: "code_assistant", name: "Code Assistant", desc: "Expert software engineer" },
-                  { id: "pdf_analyzer", name: "PDF Analyzer", desc: "Analyze PDF documents" },
-                  { id: "document_summarizer", name: "Doc Summarizer", desc: "Summarize documents" },
-                ].map((tool) => (
-                  <div
-                    key={tool.id}
-                    onClick={() => handleToolClick(tool.id)}
-                    className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:border-brand-blue/30 cursor-pointer transition-all duration-300"
-                  >
-                    <div className="font-bold text-sm text-app-text mb-1">
-                      {tool.name}
+                  {
+                    id: "translator",
+                    name: "Translator",
+                    desc: "Translate text accurately",
+                    icon: Languages,
+                    bg: "bg-blue-500/10",
+                    color: "text-blue-500",
+                  },
+                  {
+                    id: "meeting_notes",
+                    name: "Meeting Notes",
+                    desc: "Summarize meetings",
+                    icon: NotebookPen,
+                    bg: "bg-amber-500/10",
+                    color: "text-amber-500",
+                  },
+                  {
+                    id: "email_writer",
+                    name: "Email Writer",
+                    desc: "Professional emails",
+                    icon: Mail,
+                    bg: "bg-pink-500/10",
+                    color: "text-pink-500",
+                  },
+                  {
+                    id: "code_assistant",
+                    name: "Code Assistant",
+                    desc: "Expert software engineer",
+                    icon: Code2,
+                    bg: "bg-violet-500/10",
+                    color: "text-violet-500",
+                  },
+                  {
+                    id: "pdf_analyzer",
+                    name: "PDF Analyzer",
+                    desc: "Analyze PDF documents",
+                    icon: FileSearch,
+                    bg: "bg-rose-500/10",
+                    color: "text-rose-500",
+                  },
+                  {
+                    id: "document_summarizer",
+                    name: "Doc Summarizer",
+                    desc: "Summarize documents",
+                    icon: FileText,
+                    bg: "bg-emerald-500/10",
+                    color: "text-emerald-500",
+                  },
+                ].map((tool) => {
+                  const Icon = tool.icon;
+                  return (
+                    <div
+                      key={tool.id}
+                      onClick={() => handleToolClick(tool.id)}
+                      className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:border-brand-blue/30 cursor-pointer transition-all duration-300 flex items-start gap-3"
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-lg ${tool.bg} flex items-center justify-center shrink-0 mt-0.5`}
+                      >
+                        <Icon size={16} className={tool.color} />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-sm text-app-text mb-1">
+                          {tool.name}
+                        </div>
+                        <div className="text-xs text-app-text-secondary">
+                          {tool.desc}
+                        </div>
+                      </div>
                     </div>
-                    <div className="text-xs text-app-text-secondary">
-                      {tool.desc}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

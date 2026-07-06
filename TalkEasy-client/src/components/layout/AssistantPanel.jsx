@@ -129,9 +129,15 @@ const AssistantPanel = () => {
 
         <div className="bg-surface-solid border border-glass-border rounded-2xl p-5 shadow-sm text-center flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm mb-3">
-            <img src="/robot.png" alt="Assistant" className="w-full h-full object-cover" />
+            <img
+              src="/robot.png"
+              alt="Assistant"
+              className="w-full h-full object-cover"
+            />
           </div>
-          <h3 className="font-bold text-app-text text-base mb-1">TalkEasy Assistant</h3>
+          <h3 className="font-bold text-app-text text-base mb-1">
+            TalkEasy Assistant
+          </h3>
           <span className="text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-blue/20 mb-3">
             Professional
           </span>
@@ -157,15 +163,15 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setWebSearch(!webSearch)}
-              className={`w-9 h-5 rounded-full relative flex items-center transition-colors duration-300 border border-glass-border ${
+              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
                 webSearch
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 ${
-                  webSearch ? "right-0.8" : "left-0.8"
+                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                  webSearch ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
             </button>
@@ -180,36 +186,19 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setMemory(!memory)}
-              className={`w-9 h-5 rounded-full relative flex items-center transition-colors duration-300 border border-glass-border ${
+              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
                 memory
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 ${
-                  memory ? "right-0.8" : "left-0.8"
+                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                  memory ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
             </button>
           </div>
-
-          {/* Reasoning */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-app-text-secondary font-medium text-sm">
-              <Sparkles size={18} className="text-app-text-muted" />
-              <span>Reasoning</span>
-            </div>
-
-            <button
-              className="w-9 h-5 rounded-full relative flex items-center transition-colors duration-300 border border-glass-border bg-brand-blue border-brand-blue"
-            >
-              <div
-                className="w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 right-0.8"
-              />
-            </button>
-          </div>
-
           {/* Images */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3 text-app-text-secondary font-medium text-sm">
@@ -219,15 +208,15 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setImages(!images)}
-              className={`w-9 h-5 rounded-full relative flex items-center transition-colors duration-300 border border-glass-border ${
+              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
                 images
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute transition-all duration-300 ${
-                  images ? "right-0.8" : "left-0.8"
+                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                  images ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
             </button>
@@ -265,9 +254,9 @@ const AssistantPanel = () => {
               <div
                 className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
               >
-                {file.fileType === 'image' ? (
+                {file.fileType === "image" ? (
                   <ImageIcon size={20} />
-                ) : file.fileType === 'audio' ? (
+                ) : file.fileType === "audio" ? (
                   <Music size={20} />
                 ) : (
                   <FileText size={20} />
@@ -280,7 +269,10 @@ const AssistantPanel = () => {
                 </p>
 
                 <p className="text-[10px] text-app-text-secondary font-semibold mt-0.5">
-                  {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString() : 'Just now'} • {file.fileType || 'document'}
+                  {file.uploadedAt
+                    ? new Date(file.uploadedAt).toLocaleDateString()
+                    : "Just now"}{" "}
+                  • {file.fileType || "document"}
                 </p>
               </div>
 
@@ -324,22 +316,28 @@ const AssistantPanel = () => {
       </section>
 
       {/* Conversation Stats Section */}
-      <section className="mt-4 pt-4 border-t border-glass-border shrink-0">
+      {/* <section className="mt-4 pt-4 border-t border-glass-border shrink-0">
         <h3 className="font-bold text-xs text-app-text-muted mb-4">
           Conversation Stats
         </h3>
         <div className="grid grid-cols-3 gap-2">
           <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
             <span className="text-brand-blue font-extrabold text-lg">128</span>
-            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Messages</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">
+              Messages
+            </span>
           </div>
           <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
             <span className="text-brand-blue font-extrabold text-lg">12</span>
-            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Files</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">
+              Files
+            </span>
           </div>
           <div className="flex flex-col items-center justify-center p-3 bg-surface-solid border border-glass-border rounded-xl text-center">
             <span className="text-brand-blue font-extrabold text-lg">5.2K</span>
-            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">Tokens</span>
+            <span className="text-[9px] text-app-text-muted font-semibold uppercase mt-1">
+              Tokens
+            </span>
           </div>
         </div>
         <div className="mt-3 flex items-center gap-1.5 text-[10px] text-app-text-muted font-semibold">
@@ -348,7 +346,7 @@ const AssistantPanel = () => {
             <span>AI Powered</span>
           </div>
         </div>
-      </section>
+      </section> */}
     </aside>
   );
 };
