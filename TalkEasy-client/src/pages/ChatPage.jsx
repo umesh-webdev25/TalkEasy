@@ -38,6 +38,8 @@ import Card from "../components/ui/Card";
 const ChatPage = () => {
   const {
     activeChat,
+    activeChatId,
+    createNewChat,
     sendMessage,
     typing,
     voiceMode,
@@ -132,7 +134,11 @@ const ChatPage = () => {
       textToSend = `[FILE:${f.fileId}]\n` + textToSend;
     });
 
-    sendMessage(textToSend.trim());
+    if (activeChatId) {
+      sendMessage(textToSend.trim());
+    } else {
+      createNewChat(textToSend.trim());
+    }
     setInputValue("");
     setStagedFiles([]);
   };
@@ -193,7 +199,7 @@ const ChatPage = () => {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-transparent relative mt-0">
       {/* Messages Content */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 scrollbar-hide">
         {activeChat?.messages && activeChat.messages.length > 0 ? (
           activeChat.messages.map((message) => {
             const isUser = message.sender === "user";
@@ -376,7 +382,7 @@ const ChatPage = () => {
           })
         ) : (
           /* Empty Chat State */
-          <div className="h-full flex flex-col items-center p-6 select-none max-w-5xl mx-auto overflow-y-auto custom-scrollbar w-full">
+          <div className="h-full flex flex-col items-center p-6 select-none max-w-5xl mx-auto w-full">
             {/* Hero */}
             <div className="flex flex-col items-center text-center mt-4 mb-10">
               <div className="w-40 h-40 relative mb-6 flex items-center justify-center">

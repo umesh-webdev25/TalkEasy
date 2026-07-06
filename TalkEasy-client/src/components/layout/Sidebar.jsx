@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MessageSquare,
   History,
@@ -9,13 +10,28 @@ import {
   Search,
   Trash,
   X,
+  MoreVertical,
+  Share2,
+  Pin,
+  Pencil,
+  Trash2,
   Menu,
   PanelLeft,
   Sparkles,
   ChevronDown,
+  User,
+  Settings,
+  LogOut,
+  ChevronRight,
+  Palette,
+  CircleHelp,
+  Check,
 } from "lucide-react";
 import { useChat } from "../../context/ChatContext";
 import Button from "../ui/Button";
+import Dropdown from "../ui/Dropdown";
+import { getUserById } from "../../api/authApi";
+import ProfileModal from "./ProfileModal";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const {
@@ -25,24 +41,152 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
     createNewChat,
     deleteChat,
     toggleStarChat,
+    renameChat, // add this to ChatContext if it doesn't exist yet
+    pinChat, // add this to ChatContext if it doesn't exist yet
     loadingChats,
     activeSidebarView,
     setActiveSidebarView,
     files,
     analyzeFile,
     handleUploadFile,
+    setSettingsOpen,
   } = useChat();
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [user, setUser] = useState(null);
+  const [userInitials, setUserInitials] = useState("");
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState(null);
+  const [renamingChatId, setRenamingChatId] = useState(null);
+  const [renameValue, setRenameValue] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
+  const handleLogout = () => {
+    navigate("/login");
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const stored = localStorage.getItem("user");
+        if (!stored) return;
+
+        const { id } = JSON.parse(stored);
+
+        const response = await getUserById(id);
+
+        setUser(response.user);
+
+        const first = response.user.first_name?.[0] ?? "";
+        const last = response.user.last_name?.[0] ?? "";
+
+        setUserInitials(`${first}${last}`.toUpperCase());
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  // --- Chat row menu handlers ---
+  const handleShare = (chatId) => {
+    const shareUrl = `${window.location.origin}/chat/${chatId}`;
+    navigator.clipboard
+      .writeText(shareUrl)
+      .then(() => {
+        // swap for a toast if you have one wired up
+        console.log("Share link copied:", shareUrl);
+      })
+      .catch((err) => console.error("Failed to copy share link", err));
+  };
+
+  const handlePin = (chatId) => {
+    if (pinChat) {
+      pinChat(chatId);
+    } else {
+      console.warn("pinChat is not implemented in ChatContext yet");
+    }
+  };
+
+  const startRename = (chat) => {
+    setRenamingChatId(chat.id);
+    setRenameValue(chat.title || "");
+    setOpenMenuId(null);
+  };
+
+  const commitRename = (chatId) => {
+    const trimmed = renameValue.trim();
+    if (trimmed && renameChat) {
+      renameChat(chatId, trimmed);
+    }
+    setRenamingChatId(null);
+    setRenameValue("");
+  };
+
+  const handleDelete = (chatId) => {
+    deleteChat(chatId);
+  };
+
+  const profileItems = [
+    {
+      render: () => (
+        <div className="w-full flex items-center justify-between p-2 hover:bg-surface-solid-hover transition-colors rounded-xl cursor-pointer">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-brand-blue/10 flex items-center justify-center text-brand-blue font-bold">
+              {userInitials || "U"}
+            </div>
+            <div className="text-left flex flex-col">
+              <span className="font-bold text-app-text text-sm truncate max-w-[140px]">
+                {user
+                  ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+                    "TalkEasy User"
+                  : "TalkEasy User"}
+              </span>
+              <span className="text-[10px] text-app-text-muted truncate max-w-[140px]">
+                {user?.email || "user@talkeasy.com"}
+              </span>
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    { divider: true },
+    { label: "Upgrade plan", icon: Sparkles, onClick: () => {} },
+    { label: "Personalization", icon: Palette, onClick: () => {} },
+    { label: "Profile", icon: User, onClick: () => setIsProfileOpen(true) },
+    { label: "Settings", icon: Settings, onClick: () => setSettingsOpen(true) },
+    { divider: true },
+    { label: "Help", icon: CircleHelp, onClick: () => {} },
+    { label: "Log out", icon: LogOut, danger: true, onClick: handleLogout },
+  ];
+
+  const userProfileTrigger = (
+    <div className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-surface-solid-hover rounded-xl transition-colors w-full">
+      <div className="w-10 h-9 rounded-full bg-brand-blue/10 flex flex-shrink-0 items-center justify-center text-sm font-bold text-brand-blue border border-glass-border">
+        {userInitials || "U"}
+      </div>
+      <div className={`flex-col text-left flex-1 min-w-0 transition-opacity duration-300 ${!isOpen ? "hidden" : "flex"}`}>
+        <span className="text-sm font-bold text-app-text truncate block">
+          {user
+            ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+              "TalkEasy User"
+            : "TalkEasy User"}
+        </span>
+        <span className="text-[10px] text-app-text-muted truncate block">
+          {user?.email || "user@talkeasy.com"}
+        </span>
+      </div>
+    </div>
+  );
+
   const navItems = [
     { id: "chats", label: "Chats", icon: MessageSquare },
-    // { id: 'history', label: 'History', icon: History },
     { id: "starred", label: "Starred", icon: Star },
     { id: "image_generator", label: "Generated", icon: Sparkles },
     { id: "tools", label: "Tools", icon: Wrench, badge: "New" },
@@ -70,7 +214,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
   return (
     <>
-      {/* Mobile Backdrop */}
       {isOpen && (
         <div
           className="fixed inset-0 z-40 bg-slate-900/30 dark:bg-black/60 md:hidden backdrop-blur-sm"
@@ -86,12 +229,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         }`}
       >
         <div className="w-60 flex flex-col h-full shrink-0">
-          {/* Sidebar Header */}
+          {/* Header */}
           <div className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-2">
-              {/* <div className="w-9 h-9 bg-brand-blue rounded-xl flex items-center justify-center text-white active-glow">
-                <MessageSquare size={18} strokeWidth={2.5} />
-              </div> */}
               <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white mb-1">
                 <svg
                   className="w-7 h-7"
@@ -115,12 +255,15 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               onClick={toggleSidebar}
               className="p-1.5 rounded-lg text-app-text-muted hover:bg-surface-solid-hover transition-colors"
             >
-              <PanelLeft  size={25} />
+              <PanelLeft size={25} />
             </button>
           </div>
-          {/* New Chat Button */}
+
           <div className="px-4 mb-4">
-            <Button className="w-full justify-between py-3 rounded-xl text-white bg-[#0c6dff] hover:bg-[#0c6dff]">
+            <Button
+              onClick={() => createNewChat()}
+              className="w-full justify-between py-3 rounded-xl text-white bg-[#0c6dff] hover:bg-[#0c6dff]"
+            >
               <span className="flex items-center gap-2">
                 <Plus size={18} strokeWidth={2.5} />
                 New Chat
@@ -128,9 +271,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </Button>
           </div>
 
-          {/* Navigation Items */}
           <div className="px-5 mb-2 mt-2">
-            <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-wider">Main</span>
+            <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-wider">
+              Main
+            </span>
           </div>
           <nav className="px-3 space-y-1 mb-4">
             {navItems.map((item, idx) => {
@@ -165,13 +309,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             })}
           </nav>
 
-          {/* Dynamic Rendering Area based on activeSidebarView */}
-
           {(activeSidebarView === "chats" ||
             activeSidebarView === "history" ||
             activeSidebarView === "starred") && (
             <>
-              {/* Chats/History Header */}
               <div className="px-5 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
                 <span>
                   {activeSidebarView === "starred"
@@ -188,7 +329,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </button>
               </div>
 
-              {/* Search bar within recent chats */}
               {showSearch && (
                 <div className="px-4 mb-3">
                   <input
@@ -201,7 +341,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </div>
               )}
 
-              {/* Recent Chats List */}
               <div className="flex-1 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
                 {loadingChats ? (
                   <div className="text-center py-6 text-xs text-brand-blue dark:text-brand-cyan font-medium animate-pulse">
@@ -215,54 +354,110 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <div
                       key={chat.id}
                       onClick={() => {
+                        if (renamingChatId === chat.id) return;
                         setActiveChatId(chat.id);
                         if (window.innerWidth < 768) toggleSidebar();
                       }}
-                      className={`relative px-4 py-3 rounded-xl cursor-pointer group transition-all duration-300 border ${
+                      className={`relative px-2 py-3 rounded-xl cursor-pointer group transition-all duration-300 border ${
                         chat.id === activeChatId
                           ? "bg-surface-solid border-glass-border shadow-sm"
                           : "hover:bg-surface-solid-hover border-transparent"
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1 gap-2">
-                        <span className="font-bold text-sm text-app-text truncate pr-6">
-                          {chat.title}
-                        </span>
-                        <span className="text-[10px] text-app-text-muted shrink-0 font-semibold">
-                          {chat.time}
-                        </span>
-                      </div>
-                      <p className="text-xs text-app-text-secondary truncate pr-6">
-                        {chat.preview}
-                      </p>
-
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStarChat(chat.id, !chat.isStarred);
-                        }}
-                        className={`absolute right-10 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-all duration-200 ${
-                          chat.isStarred
-                            ? "text-yellow-400 opacity-100"
-                            : "text-app-text-muted hover:text-yellow-400 hover:bg-surface-solid-hover opacity-0 group-hover:opacity-100"
-                        }`}
-                      >
-                        <Star
-                          size={13}
-                          fill={chat.isStarred ? "currentColor" : "none"}
+                      {renamingChatId === chat.id ? (
+                        <input
+                          autoFocus
+                          value={renameValue}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => setRenameValue(e.target.value)}
+                          onBlur={() => commitRename(chat.id)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") commitRename(chat.id);
+                            if (e.key === "Escape") {
+                              setRenamingChatId(null);
+                              setRenameValue("");
+                            }
+                          }}
+                          className="w-[85%] bg-transparent border-b border-brand-blue text-sm text-app-text outline-none pr-6"
                         />
-                      </button>
+                      ) : (
+                        <p className="text-sm text-app-text-secondary truncate pr-6">
+                          {chat.preview}
+                        </p>
+                      )}
 
-                      {/* Delete Button on Hover */}
+                      {/* 3-dot trigger */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          deleteChat(chat.id);
+                          setOpenMenuId(
+                            openMenuId === chat.id ? null : chat.id,
+                          );
                         }}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-app-text-muted hover:text-red-500 hover:bg-surface-solid-hover opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-app-text-muted hover:text-app-text hover:bg-base-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
                       >
-                        <Trash size={13} />
+                        <MoreVertical size={16} />
                       </button>
+
+                      {openMenuId === chat.id && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-40"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setOpenMenuId(null);
+                            }}
+                          />
+
+                          <div
+                            className="absolute right-2 top-full mt-1 z-50 w-40 rounded-lg border border-glass-border bg-surface-solid shadow-lg py-1 animate-in fade-in zoom-in-95 duration-150"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <button
+                              onClick={() => {
+                                handleShare(chat.id);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-app-text hover:bg-surface-solid-hover transition-colors"
+                            >
+                              <Share2 size={15} />
+                              Share
+                            </button>
+
+                            <button
+                              onClick={() => {
+                                handlePin(chat.id);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-app-text hover:bg-surface-solid-hover transition-colors"
+                            >
+                              <Pin size={15} />
+                              {chat.pinned ? "Unpin" : "Pin"}
+                            </button>
+
+                            <button
+                              onClick={() => startRename(chat)}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-app-text hover:bg-surface-solid-hover transition-colors"
+                            >
+                              <Pencil size={15} />
+                              Rename
+                            </button>
+
+                            <div className="my-1 border-t border-glass-border" />
+
+                            <button
+                              onClick={() => {
+                                handleDelete(chat.id);
+                                setOpenMenuId(null);
+                              }}
+                              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                            >
+                              <Trash2 size={15} />
+                              Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   ))
                 )}
@@ -311,36 +506,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </div>
               <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pb-4">
                 {[
-                  {
-                    id: "translator",
-                    name: "Translator",
-                    desc: "Translate text accurately",
-                  },
-                  {
-                    id: "meeting_notes",
-                    name: "Meeting Notes",
-                    desc: "Summarize meetings",
-                  },
-                  {
-                    id: "email_writer",
-                    name: "Email Writer",
-                    desc: "Professional emails",
-                  },
-                  {
-                    id: "code_assistant",
-                    name: "Code Assistant",
-                    desc: "Expert software engineer",
-                  },
-                  {
-                    id: "pdf_analyzer",
-                    name: "PDF Analyzer",
-                    desc: "Analyze PDF documents",
-                  },
-                  {
-                    id: "document_summarizer",
-                    name: "Doc Summarizer",
-                    desc: "Summarize documents",
-                  },
+                  { id: "translator", name: "Translator", desc: "Translate text accurately" },
+                  { id: "meeting_notes", name: "Meeting Notes", desc: "Summarize meetings" },
+                  { id: "email_writer", name: "Email Writer", desc: "Professional emails" },
+                  { id: "code_assistant", name: "Code Assistant", desc: "Expert software engineer" },
+                  { id: "pdf_analyzer", name: "PDF Analyzer", desc: "Analyze PDF documents" },
+                  { id: "document_summarizer", name: "Doc Summarizer", desc: "Summarize documents" },
                 ].map((tool) => (
                   <div
                     key={tool.id}
@@ -358,26 +529,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </div>
             </div>
           )}
-          {/* User Profile Section at Bottom */}
-          <div className="mt-auto p-4 border-t border-glass-border">
-            <div className="flex items-center justify-between p-2 rounded-xl hover:bg-surface-solid-hover cursor-pointer transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gradient-to-r from-brand-blue to-brand-cyan flex items-center justify-center text-white font-bold text-sm">
-                  U
-                </div>
-                <div>
-                  <div className="text-sm font-bold text-app-text">Umesh</div>
-                  <div className="text-[10px] text-brand-blue font-semibold flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 rounded-full bg-brand-blue"></div>
-                    Pro Plan
-                  </div>
-                </div>
-              </div>
-              <ChevronDown size={16} className="text-app-text-muted" />
-            </div>
+
+          <div className="mt-auto p-3 border-t border-glass-border">
+            <Dropdown
+              trigger={userProfileTrigger}
+              items={profileItems}
+              align="top-left"
+              className="w-full"
+              menuClassName="w-[calc(100%-1rem)] ml-2 mb-2"
+            />
           </div>
         </div>
       </aside>
+
+      {isProfileOpen && (
+        <ProfileModal user={user} onClose={() => setIsProfileOpen(false)} />
+      )}
     </>
   );
 };
