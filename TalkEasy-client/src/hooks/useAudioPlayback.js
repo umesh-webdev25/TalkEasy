@@ -5,6 +5,7 @@ export const useAudioPlayback = () => {
   const audioContextRef = useRef(null);
   const audioQueueRef = useRef([]);
   const isPlayingRef = useRef(false);
+  const activeSourceRef = useRef(null);
 
   useEffect(() => {
     // Initialize AudioContext on first user interaction
@@ -25,7 +26,7 @@ export const useAudioPlayback = () => {
     };
   }, []);
 
-  const playNextInQueue = useCallback(async () => {
+  const playNextInQueue = useCallback(async function processQueue() {
     if (audioQueueRef.current.length === 0) {
       setIsPlaying(false);
       isPlayingRef.current = false;
@@ -56,13 +57,13 @@ export const useAudioPlayback = () => {
         if (activeSourceRef.current === source) {
           activeSourceRef.current = null;
         }
-        playNextInQueue();
+        processQueue();
       };
       
       source.start(0);
     } catch (error) {
       console.error('Error decoding audio data:', error);
-      playNextInQueue(); // Skip this chunk on error
+      processQueue(); // Skip this chunk on error
     }
   }, []);
 
@@ -76,8 +77,6 @@ export const useAudioPlayback = () => {
     }
     return bytes.buffer;
   };
-
-  const activeSourceRef = useRef(null);
 
   const queueAudioChunk = useCallback((base64Audio, isFinal) => {
     const arrayBuffer = base64ToArrayBuffer(base64Audio);
