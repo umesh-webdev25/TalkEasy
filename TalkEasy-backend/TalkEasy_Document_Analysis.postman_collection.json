@@ -1,0 +1,83 @@
+{
+  "info": {
+    "name": "TalkEasy - AI Document Analysis API",
+    "description": "Collection for testing the Document Analysis Module using Google Gemini File API with session management.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Upload & Analyze (New Session)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "file",
+              "type": "file",
+              "src": []
+            },
+            {
+              "key": "prompt",
+              "value": "Summarize this document.",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/document/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "document",
+            "analyze"
+          ]
+        },
+        "description": "Upload a PDF file to start a new document analysis session. Remember to select a file in the 'file' parameter."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Follow-up Question (Reuse Session)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"sessionId\": \"PASTE_SESSION_ID_HERE\",\n    \"prompt\": \"Generate 5 interview questions from this document.\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:5000/api/document/analyze",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "5000",
+          "path": [
+            "api",
+            "document",
+            "analyze"
+          ]
+        },
+        "description": "Ask follow-up questions using the sessionId returned from the initial upload. Replace PASTE_SESSION_ID_HERE with the actual sessionId."
+      },
+      "response": []
+    }
+  ]
+}
