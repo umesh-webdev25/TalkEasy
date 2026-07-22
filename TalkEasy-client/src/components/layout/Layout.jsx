@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Sidebar from './Sidebar';
 import Navbar from './Navbar';
 import AssistantPanel from './AssistantPanel';
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
-    return typeof window !== 'undefined' ? window.innerWidth >= 768 : true;
+    return typeof window !== 'undefined' ? window.innerWidth >= 1024 : false; // Better default for responsiveness, close by default on mobile/tablet
   });
 
   return (
-    <div className="flex h-screen w-full bg-app-bg overflow-hidden">
+    <div className="flex h-[100dvh] w-full bg-app-bg overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       {/* Sidebar Navigation */}
       <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSidebarOpen(!sidebarOpen)} />
       

@@ -230,7 +230,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       )}
 
       <aside
-        className={`fixed md:relative top-0 bottom-0 left-0 z-45 flex flex-col glass-panel min-h-screen ${isMounted ? "transition-all duration-300" : "transition-none"} overflow-hidden ${
+        className={`fixed md:relative top-0 bottom-0 left-0 z-45 flex flex-col glass-panel h-[100dvh] ${isMounted ? "transition-all duration-300" : "transition-none"} overflow-hidden ${
           isOpen
             ? "w-60 translate-x-0 opacity-100 border-r border-glass-border"
             : "w-0 -translate-x-full opacity-0 pointer-events-none border-none"
@@ -261,7 +261,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </div>
             <button
               onClick={toggleSidebar}
-              className="p-1.5 rounded-lg text-app-text-muted hover:bg-surface-solid-hover transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-app-text-muted hover:bg-surface-solid-hover transition-colors"
             >
               <PanelLeft size={25} />
             </button>
@@ -331,7 +331,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </span>
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="p-1 rounded-md text-app-text-muted hover:text-app-text transition-colors"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-app-text-muted hover:text-app-text transition-colors"
                 >
                   <Search size={14} />
                 </button>
@@ -402,7 +402,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             openMenuId === chat.id ? null : chat.id,
                           );
                         }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-app-text-muted hover:text-app-text hover:bg-base-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 w-[44px] h-[44px] flex items-center justify-center rounded-lg text-app-text-muted hover:text-app-text hover:bg-base-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
                       >
                         <MoreVertical size={16} />
                       </button>

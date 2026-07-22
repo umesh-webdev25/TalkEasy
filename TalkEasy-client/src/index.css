@@ -6,6 +6,8 @@
 @theme {
   --font-sans: 'Geist', 'Inter', system-ui, -apple-system, sans-serif;
 
+  --breakpoint-xs: 430px;
+
   --color-brand-blue: #0066ff;
   --color-brand-cyan: #00d1ff;
   --color-brand-violet: #8447ff;
@@ -29,6 +31,16 @@
   --animate-float: float 6s infinite ease-in-out;
   --animate-orb-glow: orb-glow 4s infinite ease-in-out;
 }
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-panel {
+    background: var(--surface-solid);
+  }
+  .glass-input {
+    background: var(--surface-solid);
+  }
+}
+
 
 @keyframes pulse-glow {
 

@@ -9,13 +9,13 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
-    <header className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-glass-border bg-glass-bg backdrop-blur-md sticky top-0 z-30">
-      <div className="flex items-center gap-3.5">
+    <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-glass-border bg-glass-bg backdrop-blur-md sticky top-0 z-30">
+      <div className="flex items-center gap-2 sm:gap-3.5">
         {/* Menu toggle */}
         {!sidebarOpen && (
           <button
             onClick={onMenuClick}
-            className="p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
           >
             <Menu size={20} />
           </button>
@@ -53,20 +53,20 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
         {/* Search button */}
         <button
           onClick={() => setIsSearchOpen(true)}
-          className="p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
         >
           <Search size={18} />
         </button>
 
         {/* Layout grid */}
-        <button className="hidden sm:inline-flex p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors">
+        <button className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors">
           <LayoutGrid size={18} />
         </button>
 
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
         >
           {isDark ? <Sun size={18} /> : <Moon size={18} />}
         </button>

@@ -221,7 +221,7 @@ const ChatPage = () => {
                 >
                   {/* Chat bubble */}
                   <div
-                    className={`px-5 py-4 rounded-2xl text-sm leading-relaxed border shadow-sm transition-all duration-300 ${
+                    className={`px-5 py-4 rounded-2xl text-sm leading-relaxed border shadow-sm transition-all duration-300 break-words ${
                       isUser
                         ? "bg-brand-blue/10 border-brand-blue/20 text-app-text rounded-tr-none"
                         : "bg-surface-solid border-glass-border text-app-text rounded-tl-none"
@@ -357,7 +357,7 @@ const ChatPage = () => {
                           <button
                             key={idx}
                             onClick={() => handleSuggestionClick(suggestion)}
-                            className="px-3.5 py-1.5 border border-glass-border bg-surface-solid hover:bg-brand-blue/5 text-brand-blue dark:text-brand-cyan text-xs font-bold rounded-full transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+                            className="px-4 py-2 border border-glass-border bg-surface-solid hover:bg-brand-blue/5 text-brand-blue dark:text-brand-cyan text-xs font-bold rounded-full transition-all duration-300 hover:scale-[1.02] cursor-pointer"
                           >
                             {suggestion}
                           </button>
@@ -388,7 +388,7 @@ const ChatPage = () => {
                 />
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-extrabold text-app-text mb-3 tracking-tight animate-fade-in-up">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-app-text mb-3 tracking-tight animate-fade-in-up">
                 Welcome to{" "}
                 <span className="bg-gradient-to-r from-brand-blue to-cyan-500 bg-clip-text text-transparent">
                   TalkEasy AI
@@ -406,7 +406,7 @@ const ChatPage = () => {
               <h3 className="text-sm font-bold text-app-text mb-4">
                 Quick Actions
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 w-full">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 w-full">
                 {[
                   {
                     icon: <Monitor size={22} className="text-blue-500" />,
@@ -583,7 +583,7 @@ const ChatPage = () => {
             <div className="flex items-center gap-1.5 pl-2 relative">
               <button
                 type="button"
-                className="w-10 h-10 rounded-full flex items-center justify-center text-white bg-brand-blue shrink-0 shadow-md hover:scale-105 transition-transform"
+                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-white bg-brand-blue shrink-0 shadow-md hover:scale-105 transition-transform"
               >
                 <Sparkles size={18} />
               </button>
@@ -591,7 +591,7 @@ const ChatPage = () => {
               <button
                 type="button"
                 onClick={() => setShowAttachMenu(!showAttachMenu)}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors cursor-pointer"
+                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors cursor-pointer"
               >
                 <Paperclip size={18} />
               </button>
@@ -632,7 +632,7 @@ const ChatPage = () => {
               <button
                 type="button"
                 onClick={() => setWebSearch(!webSearch)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors cursor-pointer ${webSearch ? "text-brand-blue bg-brand-blue/10" : "text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover"}`}
+                className={`w-[44px] h-[44px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${webSearch ? "text-brand-blue bg-brand-blue/10" : "text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover"}`}
               >
                 <Globe size={18} />
               </button>
@@ -668,7 +668,7 @@ const ChatPage = () => {
               <button
                 type="button"
                 onClick={handleMicClick}
-                className="w-10 h-10 rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors shrink-0 cursor-pointer"
+                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors shrink-0 cursor-pointer"
               >
                 <Mic size={18} />
               </button>
@@ -676,7 +676,7 @@ const ChatPage = () => {
               <button
                 type="submit"
                 disabled={!inputValue.trim() && stagedFiles.length === 0}
-                className="w-10 h-10 rounded-full bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-white hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                className="w-[44px] h-[44px] rounded-full bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-white hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
               >
                 <Send size={16} className="-ml-0.5" />
               </button>
