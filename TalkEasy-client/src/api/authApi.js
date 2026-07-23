@@ -26,7 +26,7 @@ export const getUsers = async () => {
 };
 
 export const getUserById = async (userId) => {
-  const response = await api.get(`/auth/user/${userId}`);
+  const response = await api.get(`/auth/users/${userId}`);
   console.log(response.data);
   return response.data;
 };

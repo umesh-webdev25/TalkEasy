@@ -1,6 +1,7 @@
 import { authService } from '../services/auth.service.js';
 import { emailService } from '../services/email.service.js';
 import { logger } from '../config/logger.js';
+import { env } from '../config/env.js';
 
 export const signup = async (req, res) => {
   try {
@@ -126,7 +127,7 @@ export const googleCallback = async (req, res) => {
               localStorage.setItem('refresh_token', ${JSON.stringify(refreshToken)});
               localStorage.setItem('user', JSON.stringify(${JSON.stringify(userObj)}));
             } catch(e) {}
-            window.location.href = '/';
+            window.location.href = '${env.FRONTEND_URL}';
           </script>
         </body>
       </html>

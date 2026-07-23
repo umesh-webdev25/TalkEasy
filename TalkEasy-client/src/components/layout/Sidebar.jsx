@@ -82,16 +82,22 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         const stored = localStorage.getItem("user");
         if (!stored) return;
 
-        const { id } = JSON.parse(stored);
-
-        const response = await getUserById(id);
-
-        setUser(response.user);
-
-        const first = response.user.first_name?.[0] ?? "";
-        const last = response.user.last_name?.[0] ?? "";
-
+        const parsedUser = JSON.parse(stored);
+        
+        // Instantly show user data from localStorage
+        setUser(parsedUser);
+        const first = parsedUser.first_name?.[0] ?? "";
+        const last = parsedUser.last_name?.[0] ?? "";
         setUserInitials(`${first}${last}`.toUpperCase());
+
+        // Then fetch latest from API in background
+        const response = await getUserById(parsedUser.id);
+        if (response && response.user) {
+          setUser(response.user);
+          const resFirst = response.user.first_name?.[0] ?? "";
+          const resLast = response.user.last_name?.[0] ?? "";
+          setUserInitials(`${resFirst}${resLast}`.toUpperCase());
+        }
       } catch (err) {
         console.log(err);
       }

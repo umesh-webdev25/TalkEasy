@@ -4,20 +4,21 @@ import { z } from 'zod';
 dotenv.config();
 
 const envSchema = z.object({
-  PORT: z.string().default('8000'),
-  OAUTH_REDIRECT_URI: z.string().default('http://127.0.0.1:8000/auth/callback/google'),
-  AGENT_PERSONA: z.string().default('default'),
+  PORT: z.string(),
+  OAUTH_REDIRECT_URI: z.string(),
+  FRONTEND_URL: z.string(),
+  AGENT_PERSONA: z.string(),
   GEMINI_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   ELEVENLABS_API_KEY: z.string().optional(),
-  ELEVENLABS_VOICE_ID: z.string().default('pNInz6obpgDQGcFmaJcg'),
+  ELEVENLABS_VOICE_ID: z.string(),
   MONGODB_URL: z.string().optional(),
-  MONGODB_DB_NAME: z.string().default('voiceAssistance'),
-  MONGODB_SSL_ALLOW_INVALID_CERTIFICATES: z.string().default('false').transform(v => v.toLowerCase() === 'true'),
+  MONGODB_DB_NAME: z.string(),
+  MONGODB_SSL_ALLOW_INVALID_CERTIFICATES: z.string().optional().transform(v => v ? v.toLowerCase() === 'true' : false),
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
-  JWT_SECRET: z.string().default('supersecretjwtkey'),
-  LOG_LEVEL: z.string().default('info'),
+  JWT_SECRET: z.string(),
+  LOG_LEVEL: z.string(),
 });
 
 export const env = envSchema.parse(process.env);

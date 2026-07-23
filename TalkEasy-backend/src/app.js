@@ -9,7 +9,7 @@ import './middleware/googleOAuth.middleware.js';
 const app = express();
 
 app.use(cors({
-  origin: '*', // Adjust to your frontend origin in production
+  origin: env.FRONTEND_URL, // Use frontend URL from env
   credentials: true
 }));
 
