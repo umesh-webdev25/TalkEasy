@@ -41,7 +41,7 @@ export const ChatProvider = ({ children }) => {
     if (!getToken()) return;
     setLoadingChats(true);
     try {
-      const response = await fetch(`${API_BASE}/agent/chat/all`, { headers: getHeaders() });
+      const response = await fetch(`${API_BASE}/chat/history`, { headers: getHeaders() });
       const data = await response.json();
       if (data.success && data.chat_histories) {
         const formatted = data.chat_histories.map(h => ({
@@ -67,7 +67,7 @@ export const ChatProvider = ({ children }) => {
   const loadFiles = useCallback(async () => {
     if (!getToken()) return;
     try {
-      const response = await fetch(`${API_BASE}/agent/files/all`, { headers: getHeaders() });
+      const response = await fetch(`${API_BASE}/files`, { headers: getHeaders() });
       const data = await response.json();
       if (data.success) {
         setFiles(data.files || []);
@@ -87,7 +87,7 @@ export const ChatProvider = ({ children }) => {
   const loadHistory = useCallback(async (sessionId) => {
     if (!sessionId || !getToken()) return;
     try {
-      const response = await fetch(`${API_BASE}/agent/chat/${sessionId}/history`, { headers: getHeaders() });
+      const response = await fetch(`${API_BASE}/chat/history/${sessionId}`, { headers: getHeaders() });
       const data = await response.json();
       if (data.success || Array.isArray(data)) {
         const historyData = Array.isArray(data) ? data : (data.messages || []);
@@ -148,7 +148,7 @@ export const ChatProvider = ({ children }) => {
 
   const deleteChat = async (id) => {
     try {
-      const response = await fetch(`${API_BASE}/agent/chat/${id}/history`, {
+      const response = await fetch(`${API_BASE}/chat/history/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
       });
@@ -170,8 +170,8 @@ export const ChatProvider = ({ children }) => {
 
   const toggleStarChat = async (id, isStarred) => {
     try {
-      const response = await fetch(`${API_BASE}/agent/chat/${id}/star`, {
-        method: 'POST',
+      const response = await fetch(`${API_BASE}/chat/star/${id}`, {
+        method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify({ isStarred })
       });
@@ -222,7 +222,7 @@ export const ChatProvider = ({ children }) => {
 
     setTyping(true);
     try {
-      const response = await fetch(`${API_BASE}/agent/chat/${sessionId}/text`, {
+      const response = await fetch(`${API_BASE}/chat/text/${sessionId}`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({ text, toolType })
@@ -282,7 +282,7 @@ export const ChatProvider = ({ children }) => {
       if (linkedChatId) {
         formData.append("linked_chat_id", linkedChatId);
       }
-      const response = await fetch(`${API_BASE}/agent/files/upload`, {
+      const response = await fetch(`${API_BASE}/files/upload`, {
         method: "POST",
         headers: {
           ...(getToken() ? { 'Authorization': `Bearer ${getToken()}` } : {})
@@ -306,7 +306,7 @@ export const ChatProvider = ({ children }) => {
     setFiles(prev => prev.filter(f => f.fileId !== fileId));
     
     try {
-      const response = await fetch(`${API_BASE}/agent/files/${fileId}`, {
+      const response = await fetch(`${API_BASE}/files/${fileId}`, {
         method: "DELETE",
         headers: getHeaders()
       });
@@ -328,7 +328,7 @@ export const ChatProvider = ({ children }) => {
 
   const analyzeFile = async (fileId, query, sessionId = null) => {
     try {
-      const response = await fetch(`${API_BASE}/agent/files/${fileId}/analyze`, {
+      const response = await fetch(`${API_BASE}/files/analyze/${fileId}`, {
         method: "POST",
         headers: getHeaders(),
         body: JSON.stringify({ query, sessionId })

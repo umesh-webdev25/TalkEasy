@@ -35,6 +35,15 @@ import VoiceVisualizer from "../components/ui/VoiceVisualizer";
 import Modal from "../components/ui/Modal";
 import Card from "../components/ui/Card";
 
+const getMediaUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) {
+    return url;
+  }
+  const baseUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3002";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const ChatPage = () => {
   const {
     activeChat,
@@ -118,7 +127,7 @@ const ChatPage = () => {
           fileId: f.fileId,
           fileName: f.fileName,
           fileType: f.fileType,
-          fileUrl: f.previewUrl || f.fileUrl || "",
+          fileUrl: f.fileUrl || f.previewUrl || "",
           uploadedAt: new Date().toISOString(),
         }));
         // filter out any duplicates just in case
@@ -182,8 +191,9 @@ const ChatPage = () => {
           ...prev,
           {
             fileId: response.fileId,
-            fileName: file.name,
-            fileType: file.type.startsWith("image/") ? "image" : "document",
+            fileName: response.fileName || file.name,
+            fileType: response.fileType || (file.type.startsWith("image/") ? "image" : "document"),
+            fileUrl: response.fileUrl || "",
             previewUrl: URL.createObjectURL(file),
           },
         ]);
@@ -257,7 +267,7 @@ const ChatPage = () => {
                                     className="rounded-xl overflow-hidden border border-glass-border max-w-sm"
                                   >
                                     <img
-                                      src={`http://localhost:8000${file.fileUrl}`}
+                                      src={getMediaUrl(file.fileUrl)}
                                       alt={file.fileName}
                                       className="w-full h-auto object-contain bg-black/20"
                                     />

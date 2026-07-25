@@ -1,8 +1,6 @@
-const WS_BASE =
-  import.meta.env.VITE_WS_BASE;
+import { WS_BASE } from "../config/config";
 
-export const createAudioSocket = () => {  
-  return new WebSocket(
-    `${WS_BASE}/ws/audio-stream`
-  );
+export const createAudioSocket = (token = "") => {  
+  const url = `${WS_BASE}/ws/audio-stream${token ? `?token=${token}` : ""}`;
+  return new WebSocket(url);
 };

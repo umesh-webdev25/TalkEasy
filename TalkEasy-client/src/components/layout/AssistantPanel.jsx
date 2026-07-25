@@ -88,7 +88,7 @@ const AssistantPanel = () => {
       if (newMode === "Technical") apiPersona = "developer";
 
       const token = getToken();
-      await fetch(`${API_BASE}/api/persona/switch`, {
+      await fetch(`${API_BASE}/persona/switch`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -6,6 +6,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 
 import { signup } from "../api/authApi";
+import { API_BASE } from "../config/config";
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [name, setName] = useState('');
@@ -217,7 +218,7 @@ const RegisterPage = () => {
             <div className="grid grid-cols-2 gap-3">
               <button onClick={() => {
                 window.location.href =
-                  `${import.meta.env.VITE_API_BASE}/auth/login/google`;
+                  `${API_BASE}/auth/login/google`;
               }} className="flex items-center justify-center gap-2 py-2.5 px-4 bg-glass-input-bg hover:bg-surface-solid-hover border border-glass-border rounded-xl text-xs font-semibold text-app-text transition-all duration-300 cursor-pointer">
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path fill="#EA4335" d="M12.24 10.285V14.4h6.887c-.648 2.41-2.519 4.114-5.136 4.114-3.478 0-6.3-2.822-6.3-6.3 0-3.478 2.822-6.3 6.3-6.3 1.506 0 2.887.533 3.978 1.402l2.907-2.907C18.828 2.21 15.753 1.2 12.24 1.2c-5.967 0-10.8 4.833-10.8 10.8s4.833 10.8 10.8 10.8c5.448 0 10.3-3.86 10.3-10.8 0-.585-.05-1.154-.14-1.715H12.24z" />

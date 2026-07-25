@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: talkeasy-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: talkeasy-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  talkeasy-auth-service:
+    build:
+      context: .
+      dockerfile: talkeasy-auth-service/Dockerfile
+    container_name: talkeasy-auth-service
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - MONGODB_URL=mongodb://mongodb:27017/talkeasy
+      - MONGODB_DB_NAME=talkeasy
+      - LOG_LEVEL=info
+      # The rest should be provided via .env
+    env_file:
+      - talkeasy-auth-service/.env
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  talkeasy-ai-service:
+    build:
+      context: .
+      dockerfile: talkeasy-ai-service/Dockerfile
+    container_name: talkeasy-ai-service
+    ports:
+      - "3002:3002"
+    environment:
+      - PORT=3002
+      - MONGODB_URL=mongodb://mongodb:27017/talkeasy
+      - MONGODB_DB_NAME=talkeasy
+      - LOG_LEVEL=info
+      # The rest should be provided via .env
+    env_file:
+      - talkeasy-ai-service/.env
+    depends_on:
+      - mongodb
+      - redis
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

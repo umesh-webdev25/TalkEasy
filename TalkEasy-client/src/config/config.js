@@ -1,2 +1,2 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || `http://${window.location.hostname}:8000`;
-export const WS_BASE = import.meta.env.VITE_WS_BASE || `ws://${window.location.hostname}:8000`;
+export const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_BASE || "/api";
+export const WS_BASE = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_WS_BASE || `ws://${window.location.hostname}:3002`;

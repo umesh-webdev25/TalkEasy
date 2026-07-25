@@ -1,0 +1,19 @@
+import dotenv from 'dotenv';
+import { z } from 'zod';
+
+dotenv.config();
+
+const envSchema = z.object({
+  PORT: z.string().default('3002'),
+  FRONTEND_URL: z.string().optional(),
+  MONGODB_URL: z.string().optional(),
+  MONGODB_DB_NAME: z.string().default('talkeasy'),
+  GEMINI_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  ELEVENLABS_API_KEY: z.string().optional(),
+  SERPER_API_KEY: z.string().optional(),
+  JWT_SECRET: z.string(),
+  LOG_LEVEL: z.string().default('info'),
+});
+
+export const env = envSchema.parse(process.env);
