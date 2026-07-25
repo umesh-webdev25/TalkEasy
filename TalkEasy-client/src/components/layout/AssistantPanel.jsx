@@ -15,6 +15,7 @@ import {
 import { useChat } from "../../context/ChatContext";
 import { API_BASE } from "../../config/config";
 import { getToken } from "../../utils/auth";
+import PdfPreviewCard from "../ui/PdfPreviewCard";
 
 const AssistantPanel = () => {
   const {
@@ -232,62 +233,70 @@ const AssistantPanel = () => {
 
         {/* Files List */}
         <div className="space-y-3 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-1 pb-2">
-          {files.map((file, idx) => (
-            <div
-              key={idx}
-              onClick={() => openFile(file)}
-              className="
-                group
-                flex items-center gap-3.5
-                p-3.5
-                bg-surface-solid
-                border border-glass-border
-                rounded-2xl
-                shadow-sm
-                hover:shadow-md
-                hover:border-brand-blue/30
-                transition-all duration-300
-                cursor-pointer
-                relative
-              "
-            >
+          {files.map((file, idx) =>
+            file.fileType !== "image" && file.fileType !== "audio" ? (
+              <PdfPreviewCard
+                key={idx}
+                file={file}
+                onClick={openFile}
+                onRemove={(id) => deleteFile(file.fileId || id)}
+                className="max-w-full w-full my-1.5"
+              />
+            ) : (
               <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
+                key={idx}
+                onClick={() => openFile(file)}
+                className="
+                  group
+                  flex items-center gap-3.5
+                  p-3.5
+                  bg-surface-solid
+                  border border-glass-border
+                  rounded-2xl
+                  shadow-sm
+                  hover:shadow-md
+                  hover:border-brand-blue/30
+                  transition-all duration-300
+                  cursor-pointer
+                  relative
+                "
               >
-                {file.fileType === "image" ? (
-                  <ImageIcon size={20} />
-                ) : file.fileType === "audio" ? (
-                  <Music size={20} />
-                ) : (
-                  <FileText size={20} />
-                )}
+                <div
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
+                >
+                  {file.fileType === "image" ? (
+                    <ImageIcon size={20} />
+                  ) : (
+                    <Music size={20} />
+                  )}
+                </div>
+
+                <div className="overflow-hidden flex-1 pr-8">
+                  <p className="text-xs font-bold text-app-text truncate">
+                    {file.fileName || file.name}
+                  </p>
+
+                  <p className="text-[10px] text-app-text-secondary font-semibold mt-0.5">
+                    {file.uploadedAt
+                      ? new Date(file.uploadedAt).toLocaleDateString()
+                      : "Just now"}{" "}
+                    • {file.fileType || "document"}
+                  </p>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteFile(file.fileId);
+                  }}
+                  className="absolute right-3.5 p-1.5 rounded-lg text-app-text-muted hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  title="Delete File"
+                >
+                  <Trash2 size={14} />
+                </button>
               </div>
-
-              <div className="overflow-hidden flex-1 pr-8">
-                <p className="text-xs font-bold text-app-text truncate">
-                  {file.fileName || file.name}
-                </p>
-
-                <p className="text-[10px] text-app-text-secondary font-semibold mt-0.5">
-                  {file.uploadedAt
-                    ? new Date(file.uploadedAt).toLocaleDateString()
-                    : "Just now"}{" "}
-                  • {file.fileType || "document"}
-                </p>
-              </div>
-
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  deleteFile(file.fileId);
-                }}
-                className="absolute right-3.5 p-1.5 rounded-lg text-app-text-muted hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
-                title="Delete File"
-              >
-                <Trash2 size={14} />
-              </button>
-            </div>
-          ))}
+            )
+          )}
 
           {/* Empty State */}
           {files.length === 0 && (

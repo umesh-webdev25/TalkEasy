@@ -34,6 +34,7 @@ import VoiceOrb from "../components/ui/VoiceOrb";
 import VoiceVisualizer from "../components/ui/VoiceVisualizer";
 import Modal from "../components/ui/Modal";
 import Card from "../components/ui/Card";
+import PdfPreviewCard from "../components/ui/PdfPreviewCard";
 
 const getMediaUrl = (url) => {
   if (!url) return "";
@@ -185,19 +186,39 @@ const ChatPage = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
+      const tempId = `temp-${Date.now()}`;
+      setStagedFiles((prev) => [
+        ...prev,
+        {
+          fileId: tempId,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type.startsWith("image/") ? "image" : "document",
+          previewUrl: URL.createObjectURL(file),
+          file: file,
+          isUploading: true
+        },
+      ]);
+      setShowAttachMenu(false);
+
       const response = await handleUploadFile(file, activeChat?.id);
       if (response && response.success) {
-        setStagedFiles((prev) => [
-          ...prev,
-          {
-            fileId: response.fileId,
-            fileName: response.fileName || file.name,
-            fileType: response.fileType || (file.type.startsWith("image/") ? "image" : "document"),
-            fileUrl: response.fileUrl || "",
-            previewUrl: URL.createObjectURL(file),
-          },
-        ]);
-        setShowAttachMenu(false);
+        setStagedFiles((prev) =>
+          prev.map((f) =>
+            f.fileId === tempId
+              ? {
+                  ...f,
+                  fileId: response.fileId,
+                  fileName: response.fileName || f.fileName,
+                  fileType: response.fileType || f.fileType,
+                  fileUrl: response.fileUrl || "",
+                  isUploading: false
+                }
+              : f
+          )
+        );
+      } else {
+        setStagedFiles((prev) => prev.filter((f) => f.fileId !== tempId));
       }
     }
   };
@@ -273,25 +294,16 @@ const ChatPage = () => {
                                     />
                                   </div>
                                 ) : (
-                                  <div
+                                  <PdfPreviewCard
                                     key={idx}
-                                    className="flex items-center gap-3 p-3 bg-slate-900/50 dark:bg-black/40 border border-glass-border rounded-2xl max-w-sm hover:bg-slate-800/50 transition-colors"
-                                  >
-                                    <div className="w-12 h-12 rounded-xl bg-slate-800/80 flex items-center justify-center flex-shrink-0 text-brand-cyan border border-white/5 shadow-inner">
-                                      <FileText size={24} strokeWidth={2} />
-                                    </div>
-                                    <div className="flex flex-col overflow-hidden">
-                                      <span className="text-sm font-bold text-white truncate">
-                                        {file.fileName}
-                                      </span>
-                                      <span className="text-[11px] text-slate-400 font-medium">
-                                        {new Date(
-                                          file.uploadedAt,
-                                        ).toLocaleDateString("en-GB")}{" "}
-                                        • {file.fileType}
-                                      </span>
-                                    </div>
-                                  </div>
+                                    file={{
+                                      ...file,
+                                      fileUrl: getMediaUrl(file.fileUrl),
+                                      fileName: file.fileName,
+                                      fileSize: file.fileSize || file.size
+                                    }}
+                                    className="my-1"
+                                  />
                                 ),
                               )}
                             </div>
@@ -543,12 +555,18 @@ const ChatPage = () => {
           {/* Staged Files Preview */}
           {stagedFiles.length > 0 && (
             <div className="flex flex-wrap gap-3 mb-3 p-3 bg-surface-solid border border-glass-border rounded-xl">
-              {stagedFiles.map((file) => (
-                <div
-                  key={file.fileId}
-                  className="relative group rounded-lg overflow-hidden border border-glass-border bg-glass-bg flex items-center shadow-sm"
-                >
-                  {file.fileType === "image" ? (
+              {stagedFiles.map((file) =>
+                file.fileType !== "image" ? (
+                  <PdfPreviewCard
+                    key={file.fileId}
+                    file={file}
+                    onRemove={removeStagedFile}
+                  />
+                ) : (
+                  <div
+                    key={file.fileId}
+                    className="relative group rounded-lg overflow-hidden border border-glass-border bg-glass-bg flex items-center shadow-sm"
+                  >
                     <div className="w-16 h-16 relative">
                       <img
                         src={file.previewUrl}
@@ -556,33 +574,17 @@ const ChatPage = () => {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-2 p-2 w-40">
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 text-blue-500">
-                        <FileText size={20} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="text-[10px] font-bold text-app-text truncate">
-                          {file.fileName}
-                        </div>
-                        <div className="text-[9px] text-app-text-muted">
-                          Document
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Remove Button */}
-                  <button
-                    type="button"
-                    onClick={() => removeStagedFile(file.fileId)}
-                    className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full p-1 shadow-md transition-colors z-10 cursor-pointer"
-                    title="Remove file"
-                  >
-                    <X size={12} />
-                  </button>
-                </div>
-              ))}
+                    <button
+                      type="button"
+                      onClick={() => removeStagedFile(file.fileId)}
+                      className="absolute top-1 right-1 bg-red-500/80 hover:bg-red-500 text-white rounded-full p-1 shadow-md transition-colors z-10 cursor-pointer"
+                      title="Remove file"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                )
+              )}
             </div>
           )}
 
