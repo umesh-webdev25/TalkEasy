@@ -1,11 +1,11 @@
-import pino from 'pino';
-import fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
-import { geminiService } from './gemini.service.js';
-import { sessionService } from './session.service.js';
-import { extractTextFromPdf } from '../utils/document.util.js';
-
-const logger = pino({ name: 'document-service' });
+import pino from "pino";
+import fs from "fs";
+import { v4 as uuidv4 } from "uuid";
+import { geminiService } from "./gemini.service.js";
+import { sessionService } from "./session.service.js";
+import { extractTextFromPdf } from "../utils/document.util.js";
+import cloudinaryService from "./cloudinary.service.js";
+const logger = pino({ name: "document-service" });
 
 class DocumentService {
   /**
@@ -20,10 +20,26 @@ class DocumentService {
     if (sessionId) {
       session = sessionService.getSession(sessionId);
       if (!session && !file) {
-        const error = new Error('Session not found or expired. Please upload the document again.');
+        const error = new Error(
+          "Session not found or expired. Please upload the document again.",
+        );
         error.status = 404;
         throw error;
       }
+      logger.info(
+        { sessionId: session.sessionId },
+        "Processing new document upload",
+      );
+
+      const cloudinaryResult = await cloudinaryService.uploadFile(
+        file.path,
+        file.mimetype,
+      );
+
+      session.cloudinaryUrl = cloudinaryResult.secure_url;
+      session.cloudinaryPublicId = cloudinaryResult.public_id;
+
+      sessionService.updateSession(session.sessionId, session);
     }
 
     // If no active session, or the session was invalid but a file was provided, create a new one
@@ -39,28 +55,39 @@ class DocumentService {
     let responseText;
 
     if (isNewSession && file) {
-      logger.info({ sessionId: session.sessionId }, 'Processing new document upload');
-      
+      logger.info(
+        { sessionId: session.sessionId },
+        "Processing new document upload",
+      );
+
       let textExtractionSuccess = false;
 
       // Primary Path: Try pdf-parse first if it's a PDF
-      if (file.mimetype === 'application/pdf') {
+      if (file.mimetype === "application/pdf") {
         try {
           const { text, pageCount } = await extractTextFromPdf(file.path);
-          
-          if (text && text.trim() !== '') {
-            logger.info('Successfully extracted text using pdf-parse');
+
+          if (text && text.trim() !== "") {
+            logger.info("Successfully extracted text using pdf-parse");
             session.pageCount = pageCount;
             session.extractedText = text;
             sessionService.updateSession(session.sessionId, session);
-            
-            responseText = await geminiService.analyzeDocumentWithText(text, prompt);
+
+            responseText = await geminiService.analyzeDocumentWithText(
+              text,
+              prompt,
+            );
             textExtractionSuccess = true;
           } else {
-            logger.warn('pdf-parse returned empty text (likely a scanned PDF). Will fallback to Gemini File API.');
+            logger.warn(
+              "pdf-parse returned empty text (likely a scanned PDF). Will fallback to Gemini File API.",
+            );
           }
         } catch (pdfParseError) {
-          logger.warn({ err: pdfParseError }, 'pdf-parse threw an error. Will fallback to Gemini File API.');
+          logger.warn(
+            { err: pdfParseError },
+            "pdf-parse threw an error. Will fallback to Gemini File API.",
+          );
         }
       }
 
@@ -68,18 +95,27 @@ class DocumentService {
       // If the file is not a PDF, or if pdf-parse failed/returned empty text, we upload the raw document.
       if (!textExtractionSuccess) {
         try {
-          logger.info('Uploading original document to Gemini File API');
-          const geminiFile = await geminiService.uploadFile(file.path, file.mimetype);
-          
+          logger.info("Uploading original document to Gemini File API");
+          const geminiFile = await geminiService.uploadFile(
+            file.path,
+            file.mimetype,
+          );
+
           session.geminiFileUri = geminiFile.uri;
           session.geminiFileName = geminiFile.name; // Used for cleanup
           sessionService.updateSession(session.sessionId, session);
 
           // Analyze using Gemini File API
-          responseText = await geminiService.analyzeDocumentWithUri(session.geminiFileUri, prompt, file.mimetype);
+          responseText = await geminiService.analyzeDocumentWithUri(
+            session.geminiFileUri,
+            prompt,
+            file.mimetype,
+          );
         } catch (geminiError) {
-          logger.error({ err: geminiError }, 'Gemini File API also failed.');
-          throw new Error('Could not process the document. Both text extraction and Gemini File API analysis failed.');
+          logger.error({ err: geminiError }, "Gemini File API also failed.");
+          throw new Error(
+            "Could not process the document. Both text extraction and Gemini File API analysis failed.",
+          );
         }
       }
 
@@ -89,32 +125,44 @@ class DocumentService {
           fs.unlinkSync(file.path);
         }
       } catch (cleanupErr) {
-        logger.warn({ err: cleanupErr }, 'Failed to delete temporary local file');
+        logger.warn(
+          { err: cleanupErr },
+          "Failed to delete temporary local file",
+        );
       }
     } else {
-      logger.info({ sessionId: session.sessionId }, 'Reusing document for new prompt');
-      
-      // Existing session reuse
+      logger.info(
+        { sessionId: session.sessionId },
+        "Reusing document for new prompt",
+      );
+
       if (session.geminiFileUri) {
-        responseText = await geminiService.analyzeDocumentWithUri(session.geminiFileUri, prompt, session.mimeType);
+        responseText = await geminiService.analyzeDocumentWithUri(
+          session.geminiFileUri,
+          prompt,
+          session.mimeType,
+        );
       } else if (session.extractedText) {
-        // Fallback reuse
-        responseText = await geminiService.analyzeDocumentWithText(session.extractedText, prompt);
+        responseText = await geminiService.analyzeDocumentWithText(
+          session.extractedText,
+          prompt,
+        );
       } else {
-        const error = new Error('Invalid session state. No document reference found.');
-        error.status = 500;
-        throw error;
+        throw new Error("Invalid session state.");
       }
     }
-
     return {
       documentId: session.documentId,
       sessionId: session.sessionId,
       filename: session.filename,
       mimeType: session.mimeType,
-      pageCount: session.pageCount || null, // Populated from fallback if used
+      pageCount: session.pageCount,
       uploadedAt: session.uploadedAt,
-      response: responseText
+
+      cloudinaryUrl: session.cloudinaryUrl,
+      cloudinaryPublicId: session.cloudinaryPublicId,
+
+      response: responseText,
     };
   }
 }

@@ -4,6 +4,9 @@ import { env } from './config/env.js';
 import { connectDB, disconnectDB } from './config/database.js';
 import { logger } from 'shared';
 import { setupSockets } from './sockets/socket.js';
+import dns from 'dns';
+
+dns.setServers(['8.8.8.8', '8.8.4.4']);
 
 const PORT = env.PORT || 3002;
 
