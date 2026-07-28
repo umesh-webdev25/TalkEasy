@@ -6,7 +6,11 @@ class ChatRepository {
   }
 
   async findByUserId(userId) {
-    return await ChatSession.find(userId ? { user_id: userId } : {}).sort({ last_activity: -1 });
+    return await ChatSession.find({ user_id: userId }).sort({ last_activity: -1 });
+  }
+
+  async getUserSessions(userId) {
+    return this.findByUserId(userId);
   }
 
   async createSession(sessionData) {
@@ -27,17 +31,6 @@ class ChatRepository {
     return await session.save();
   }
 
-  async searchMessages(matchConditions, query) {
-    const pipeline = [
-      { $match: matchConditions },
-      { $unwind: "$messages" },
-      { $match: { "messages.content": { $regex: query, $options: "i" } } },
-      { $project: { _id: 0, session_id: 1, message: "$messages", created_at: 1 } },
-      { $sort: { "message.timestamp": -1 } },
-      { $limit: 50 }
-    ];
-    return await ChatSession.aggregate(pipeline);
-  }
 }
 
 export const chatRepository = new ChatRepository();

@@ -8,8 +8,10 @@ const mammoth = require('mammoth');
 import { logger, AppError, asyncHandler, sendSuccess } from 'shared';
 import { fileRepository } from '../repositories/file.repository.js';
 import { chatRepository } from '../repositories/chat.repository.js';
+import { messageRepository } from '../repositories/message.repository.js';
 import { llmService } from '../services/gemini.service.js';
 import { sttService } from '../services/groqWhisper.service.js';
+import cloudinaryService from '../services/cloudinary.service.js';
 
 export const uploadFile = asyncHandler(async (req, res) => {
   const userId = req.user ? req.user.user_id : null;
@@ -73,12 +75,25 @@ export const uploadFile = asyncHandler(async (req, res) => {
     }
   }
 
+  let cloudinaryUrl = null;
+  let cloudinaryPublicId = null;
+  try {
+    const cloudinaryResult = await cloudinaryService.uploadFile(filePath, req.file.mimetype);
+    cloudinaryUrl = cloudinaryResult.secure_url;
+    cloudinaryPublicId = cloudinaryResult.public_id;
+    logger.info(`✅ Successfully uploaded ${originalName} to Cloudinary.`);
+  } catch (uploadError) {
+    logger.error(`❌ Cloudinary upload failed: ${uploadError.message}`);
+  }
+
   await fileRepository.saveFile({
     fileId,
     fileName: originalName,
     fileType,
     fileSize,
-    fileUrl,
+    fileUrl: cloudinaryUrl || fileUrl,
+    cloudinaryUrl,
+    cloudinaryPublicId,
     uploadedBy: userId,
     linkedChatId: linked_chat_id,
     extractedText: extractedText ? extractedText.substring(0, 50000) : ""
@@ -86,7 +101,8 @@ export const uploadFile = asyncHandler(async (req, res) => {
 
   sendSuccess(res, 200, "File uploaded successfully", {
     fileId,
-    fileUrl,
+    fileUrl: cloudinaryUrl || fileUrl,
+    cloudinaryUrl,
     fileName: originalName,
     fileType,
     extractedTextPreview: extractedText ? extractedText.substring(0, 200) : ""
@@ -119,11 +135,25 @@ export const analyzeFile = asyncHandler(async (req, res) => {
   if (sessionId) {
     let session = await chatRepository.findBySessionId(sessionId);
     if (!session) {
-      session = await chatRepository.createSession({ session_id: sessionId, user_id: userId, messages: [] });
+      session = await chatRepository.createSession({ session_id: sessionId, user_id: userId });
+    } else {
+      if (session.user_id && userId && session.user_id !== userId) {
+        throw new AppError("Unauthorized access to chat session.", 403);
+      }
     }
-    chatHistory = session.messages.map(m => ({ role: m.role, content: m.content }));
+    const recentMessages = await messageRepository.getRecentMessages(session._id, 20);
+    chatHistory = recentMessages.map(m => ({ role: m.role, content: m.content }));
     
-    session.messages.push({ role: 'user', content: `Analyze file '${file.fileName}': ${query}` });
+    await messageRepository.createMessage({
+      sessionId: session._id,
+      user_id: userId || 'system',
+      role: 'user',
+      content: `Analyze file '${file.fileName}': ${query}`
+    });
+    
+    session.message_count += 1;
+    session.last_activity = new Date();
+    session.last_updated = new Date();
     await chatRepository.saveSession(session);
   }
 
@@ -131,9 +161,23 @@ export const analyzeFile = asyncHandler(async (req, res) => {
   const responseText = await llmService.generateResponse(prompt, chatHistory, "auto", null, [file]);
 
   if (sessionId) {
-    await chatRepository.updateSession(sessionId, 
-      { $push: { messages: { role: 'assistant', content: responseText } }, last_activity: new Date(), last_updated: new Date() }
-    );
+    const session = await chatRepository.findBySessionId(sessionId);
+    const assistantMessage = await messageRepository.createMessage({
+      sessionId: session._id,
+      user_id: userId || 'system',
+      role: 'assistant',
+      content: responseText
+    });
+    
+    // TWO-WAY LINKING: Update the File with the generated message ID
+    if (file) {
+      await fileRepository.updateFile(file.fileId, { messageId: assistantMessage._id });
+    }
+    
+    session.message_count += 1;
+    session.last_activity = new Date();
+    session.last_updated = new Date();
+    await chatRepository.saveSession(session);
   }
 
   sendSuccess(res, 200, "Analysis complete", { llm_response: responseText });
@@ -157,7 +201,17 @@ export const deleteFileEndpoint = asyncHandler(async (req, res) => {
     throw new AppError("Not authorized to delete this file", 403);
   }
 
-  if (file.fileUrl) {
+  if (file.cloudinaryPublicId) {
+    try {
+      const resourceType = file.fileType === 'image' ? 'image' : 'raw';
+      await cloudinaryService.deleteFile(file.cloudinaryPublicId, resourceType);
+      logger.info(`✅ Deleted ${file.fileName} from Cloudinary.`);
+    } catch (err) {
+      logger.error(`❌ Failed to delete from Cloudinary: ${err.message}`);
+    }
+  }
+
+  if (file.fileUrl && file.fileUrl.startsWith('/uploads/')) {
     const filePath = path.join(process.cwd(), file.fileUrl);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);

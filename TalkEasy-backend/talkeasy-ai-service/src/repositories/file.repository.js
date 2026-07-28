@@ -1,4 +1,4 @@
-import { File } from '../models/chat.model.js';
+import { File } from '../models/File.js';
 
 class FileRepository {
   async findByChatId(chatId) {
@@ -17,6 +17,18 @@ class FileRepository {
     const file = new File(fileData);
     await file.save();
     return file;
+  }
+
+  async createFile(fileData) {
+    return this.saveFile(fileData);
+  }
+
+  async getFile(fileId) {
+    return this.findById(fileId);
+  }
+
+  async getFilesBySession(chatId) {
+    return this.findByChatId(chatId);
   }
 
   async deleteFile(fileId) {

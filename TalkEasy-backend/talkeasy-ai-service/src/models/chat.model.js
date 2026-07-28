@@ -1,32 +1,60 @@
-import mongoose from 'mongoose';
-
-const messageSchema = new mongoose.Schema({
-  role: { type: String, required: true },
-  content: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now }
-});
+import mongoose from "mongoose";
 
 const chatSessionSchema = new mongoose.Schema({
-  session_id: { type: String, required: true, unique: true },
-  user_id: { type: String },
-  messages: [messageSchema],
-  created_at: { type: Date, default: Date.now },
-  last_updated: { type: Date, default: Date.now },
-  last_activity: { type: Date, default: Date.now },
-  message_count: { type: Number, default: 0 },
-  isStarred: { type: Boolean, default: false },
-  toolType: { type: String }
+  session_id: {
+    type: String,
+    required: true,
+    unique: true
+  },
+
+  user_id: {
+    type: String,
+    required: true,
+    index: true
+  },
+
+  title: {
+    type: String,
+    default: "New Chat"
+  },
+
+  toolType: {
+    type: String
+  },
+
+  message_count: {
+    type: Number,
+    default: 0
+  },
+
+  isStarred: {
+    type: Boolean,
+    default: false
+  },
+
+  created_at: {
+    type: Date,
+    default: Date.now
+  },
+
+  last_updated: {
+    type: Date,
+    default: Date.now
+  },
+
+  last_activity: {
+    type: Date,
+    default: Date.now
+  }
 });
 
-export const ChatSession = mongoose.model('ChatSession', chatSessionSchema);
-
-const fileSchema = new mongoose.Schema({
-  fileId: { type: String, required: true, unique: true },
-  fileName: { type: String, required: true },
-  uploadedBy: { type: String },
-  linkedChatId: { type: String },
-  uploadedAt: { type: Date, default: Date.now },
-  extractedText: { type: String }
+chatSessionSchema.index({
+  user_id: 1,
+  last_updated: -1
 });
 
-export const File = mongoose.model('File', fileSchema);
+export const ChatSession =
+  mongoose.model(
+    "ChatSession",
+    chatSessionSchema
+  );

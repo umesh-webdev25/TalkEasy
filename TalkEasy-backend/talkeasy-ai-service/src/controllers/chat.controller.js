@@ -1,5 +1,6 @@
 import { chatRepository } from '../repositories/chat.repository.js';
 import { fileRepository } from '../repositories/file.repository.js';
+import { messageRepository } from '../repositories/message.repository.js';
 import { logger, AppError, asyncHandler, sendSuccess } from 'shared';
 import { llmService } from '../services/gemini.service.js';
 import { sttService } from '../services/groqWhisper.service.js';
@@ -16,12 +17,25 @@ const toolPrompts = {
   "image_analyzer": "You are an expert Computer Vision Specialist and Image Analyst using Google Gemini Vision. Describe uploaded images (PNG, JPG, WEBP) in meticulous detail, perform Optical Character Recognition (OCR), read handwriting, explain financial charts/graphs, detect objects, and answer explicit questions regarding visual context."
 };
 
-const addMessage = async (sessionId, role, content, userId = null) => {
+const addMessage = async (sessionId, role, content, userId = null, fileId = null) => {
   let session = await chatRepository.findBySessionId(sessionId);
   if (!session) {
-    session = await chatRepository.createSession({ session_id: sessionId, user_id: userId, messages: [] });
+    session = await chatRepository.createSession({ session_id: sessionId, user_id: userId });
   }
-  session.messages.push({ role, content });
+
+  // Security Check: If a session exists, ensure the user owns it
+  if (session.user_id && userId && session.user_id !== userId) {
+    throw new AppError("Unauthorized access to chat session.", 403);
+  }
+
+  await messageRepository.createMessage({
+    sessionId: session._id,
+    user_id: userId || 'system',
+    role,
+    content,
+    fileId
+  });
+
   session.message_count += 1;
   session.last_activity = new Date();
   session.last_updated = new Date();
@@ -30,9 +44,23 @@ const addMessage = async (sessionId, role, content, userId = null) => {
 };
 
 export const getChatHistory = asyncHandler(async (req, res) => {
+  const userId = req.user ? req.user.user_id : null;
   const session = await chatRepository.findBySessionId(req.params.session_id);
-  const messages = session ? session.messages : [];
-  sendSuccess(res, 200, "Chat history retrieved", { session_id: req.params.session_id, messages, message_count: messages.length });
+  
+  if (!session) {
+    return sendSuccess(res, 200, "Chat history retrieved", { session_id: req.params.session_id, messages: [], message_count: 0 });
+  }
+
+  if (session.user_id && userId && session.user_id !== userId) {
+    throw new AppError("Unauthorized access to chat session.", 403);
+  }
+
+  // Support Pagination
+  const limit = parseInt(req.query.limit) || 50;
+  const skip = parseInt(req.query.skip) || 0;
+
+  const messages = await messageRepository.getMessagesBySession(session._id, limit, skip);
+  sendSuccess(res, 200, "Chat history retrieved", { session_id: req.params.session_id, messages, message_count: session.message_count });
 });
 
 export const getAllChatHistories = asyncHandler(async (req, res) => {
@@ -44,13 +72,30 @@ export const getAllChatHistories = asyncHandler(async (req, res) => {
 export const toggleStar = asyncHandler(async (req, res) => {
   const { session_id } = req.params;
   const { isStarred } = req.body;
+  const userId = req.user ? req.user.user_id : null;
+
+  const session = await chatRepository.findBySessionId(session_id);
+  if (session && session.user_id && userId && session.user_id !== userId) {
+    throw new AppError("Unauthorized access to chat session.", 403);
+  }
+
   await chatRepository.updateSession(session_id, { isStarred, last_updated: new Date() });
   sendSuccess(res, 200, "Star toggled");
 });
 
 export const clearSessionHistory = asyncHandler(async (req, res) => {
   const { session_id } = req.params;
-  await chatRepository.deleteSession(session_id);
+  const userId = req.user ? req.user.user_id : null;
+
+  const session = await chatRepository.findBySessionId(session_id);
+  if (session) {
+    if (session.user_id && userId && session.user_id !== userId) {
+      throw new AppError("Unauthorized access to chat session.", 403);
+    }
+    await messageRepository.deleteMessagesBySession(session._id);
+    await chatRepository.deleteSession(session_id);
+  }
+
   sendSuccess(res, 200, "Chat history cleared");
 });
 
@@ -60,10 +105,21 @@ export const searchChatMessages = asyncHandler(async (req, res) => {
   if (!query) return res.json({ success: true, results: [], count: 0 });
 
   const matchConditions = {};
-  if (session_id) matchConditions.session_id = session_id;
   if (userId) matchConditions.user_id = userId;
 
-  const results = await chatRepository.searchMessages(matchConditions, query);
+  if (session_id) {
+    const session = await chatRepository.findBySessionId(session_id);
+    if (session) {
+      if (session.user_id && userId && session.user_id !== userId) {
+        throw new AppError("Unauthorized access to chat session.", 403);
+      }
+      matchConditions.sessionId = session._id;
+    } else {
+      return res.json({ success: true, results: [], count: 0 });
+    }
+  }
+
+  const results = await messageRepository.searchMessages(matchConditions, query);
   sendSuccess(res, 200, "Search completed", { results, count: results.length });
 });
 
@@ -77,6 +133,11 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
   }
 
   let session = await chatRepository.findBySessionId(session_id);
+  
+  if (session && session.user_id && userId && session.user_id !== userId) {
+    throw new AppError("Unauthorized access to chat session.", 403);
+  }
+
   let currentToolType = toolType || (session ? session.toolType : null);
 
   if (!session && toolType) {
@@ -89,7 +150,7 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
   }
 
   let finalQuery = text;
-  let sessionFiles = await fileRepository.findByChatId(session_id) || [];
+  let sessionFiles = await fileRepository.findByChatId(session ? session._id : session_id) || [];
 
   // Extract file IDs from message tags like [FILE:uuid] and associate them with this chat
   const fileMatches = text.match(/\[FILE:([a-zA-Z0-9-]+)\]/g);
@@ -100,7 +161,7 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
       if (!existing) {
         const file = await fileRepository.findById(id);
         if (file) {
-          await fileRepository.updateFile(id, { linkedChatId: session_id });
+          await fileRepository.updateFile(id, { linkedChatId: session ? session._id : session_id });
           sessionFiles.push(file);
         }
       }
@@ -115,7 +176,9 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
   }
 
   await addMessage(session_id, 'user', text, userId);
-  const chatHistory = session ? session.messages.map(m => ({ role: m.role, content: m.content })) : [];
+  
+  const recentMessages = session ? await messageRepository.getRecentMessages(session._id, 20) : [];
+  const chatHistory = recentMessages.map(m => ({ role: m.role, content: m.content }));
 
   let responseText;
   try {
@@ -150,11 +213,16 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
     }
 
     let session = await chatRepository.findBySessionId(session_id);
+    
+    if (session && session.user_id && userId && session.user_id !== userId) {
+      throw new AppError("Unauthorized access to chat session.", 403);
+    }
+
     const currentToolType = session ? session.toolType : null;
     const systemPromptOverride = currentToolType ? toolPrompts[currentToolType] : null;
 
     let finalQuery = transcribedText;
-    const sessionFiles = await fileRepository.findByChatId(session_id) || [];
+    const sessionFiles = await fileRepository.findByChatId(session ? session._id : session_id) || [];
     if (sessionFiles && sessionFiles.length > 0) {
       const docContext = sessionFiles.map(f => `--- Attached Document: ${f.fileName} ---\n${f.extractedText || '[Multimodal Attachment]'}`).join('\n\n');
       if (docContext.trim()) {
@@ -163,7 +231,9 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
     }
 
     await addMessage(session_id, 'user', transcribedText, userId);
-    const chatHistory = session ? session.messages.map(m => ({ role: m.role, content: m.content })) : [];
+    
+    const recentMessages = session ? await messageRepository.getRecentMessages(session._id, 20) : [];
+    const chatHistory = recentMessages.map(m => ({ role: m.role, content: m.content }));
 
     let responseText;
     try {
@@ -205,4 +275,3 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
     }
   }
 });
-

@@ -4,6 +4,7 @@ import { sttService } from '../services/groqWhisper.service.js';
 import { llmService } from '../services/gemini.service.js';
 import { ttsService } from '../services/elevenLabs.service.js';
 import { chatRepository } from '../repositories/chat.repository.js';
+import { messageRepository } from '../repositories/message.repository.js';
 import { v4 as uuidv4 } from 'uuid';
 
 export const setupSockets = (httpServer) => {
@@ -19,7 +20,14 @@ export const setupSockets = (httpServer) => {
     let session_id = socket.handshake.query.session_id || uuidv4();
     let web_search_enabled = socket.handshake.query.web_search === 'true';
     let lang = socket.handshake.query.lang || 'auto';
-    let userId = null; // Optional: Decode from token
+    let userId = socket.handshake.query.userId || null; // Passed from frontend auth if available
+
+    if (!userId) {
+      logger.warn(`🔌 WebSocket connection rejected: Missing userId (Socket ID: ${socket.id})`);
+      socket.emit('message', { type: 'error', message: 'Authentication required. Missing userId.' });
+      socket.disconnect(true);
+      return;
+    }
 
     let audioBuffer = [];
     let isStreaming = false;
@@ -89,10 +97,26 @@ export const setupSockets = (httpServer) => {
       
       let session = await chatRepository.findBySessionId(session_id);
       if (!session) {
-        session = await chatRepository.createSession({ session_id, user_id: userId, messages: [] });
+        session = await chatRepository.createSession({ session_id, user_id: userId });
       }
-      const chatHistory = session.messages.map(m => ({ role: m.role, content: m.content }));
-      session.messages.push({ role: 'user', content: transcribedText });
+
+      // Security check (if userId is provided)
+      if (session.user_id && userId && session.user_id !== userId) {
+        socket.emit('message', { type: 'llm_streaming_error', message: 'Unauthorized session access.' });
+        return;
+      }
+
+      const recentMessages = await messageRepository.getRecentMessages(session._id, 20);
+      const chatHistory = recentMessages.map(m => ({ role: m.role, content: m.content }));
+      
+      await messageRepository.createMessage({
+        sessionId: session._id,
+        user_id: userId || 'system',
+        role: 'user',
+        content: transcribedText
+      });
+      session.message_count += 1;
+      session.last_activity = new Date();
       await chatRepository.saveSession(session);
 
       socket.emit('message', { type: 'llm_streaming_start', message: 'LLM is generating response...', user_message: transcribedText });
@@ -105,7 +129,15 @@ export const setupSockets = (httpServer) => {
         socket.emit('message', { type: 'llm_streaming_chunk', chunk, accumulated_length: accumulatedResponse.length });
       }
 
-      session.messages.push({ role: 'assistant', content: accumulatedResponse });
+      await messageRepository.createMessage({
+        sessionId: session._id,
+        user_id: userId || 'system',
+        role: 'assistant',
+        content: accumulatedResponse
+      });
+      session.message_count += 1;
+      session.last_activity = new Date();
+      session.last_updated = new Date();
       await chatRepository.saveSession(session);
 
       socket.emit('message', { type: 'tts_streaming_start', message: 'Generating speech...' });

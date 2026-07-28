@@ -26,20 +26,6 @@ class DocumentService {
         error.status = 404;
         throw error;
       }
-      logger.info(
-        { sessionId: session.sessionId },
-        "Processing new document upload",
-      );
-
-      const cloudinaryResult = await cloudinaryService.uploadFile(
-        file.path,
-        file.mimetype,
-      );
-
-      session.cloudinaryUrl = cloudinaryResult.secure_url;
-      session.cloudinaryPublicId = cloudinaryResult.public_id;
-
-      sessionService.updateSession(session.sessionId, session);
     }
 
     // If no active session, or the session was invalid but a file was provided, create a new one
@@ -50,6 +36,27 @@ class DocumentService {
         filename: file.originalname,
         mimeType: file.mimetype,
       });
+    }
+
+    // Upload to Cloudinary if a file was provided
+    if (file && !session.cloudinaryUrl) {
+      logger.info(
+        { sessionId: session.sessionId },
+        "Uploading document to Cloudinary",
+      );
+      try {
+        const cloudinaryResult = await cloudinaryService.uploadFile(
+          file.path,
+          file.mimetype,
+        );
+
+        session.cloudinaryUrl = cloudinaryResult.secure_url;
+        session.cloudinaryPublicId = cloudinaryResult.public_id;
+
+        sessionService.updateSession(session.sessionId, session);
+      } catch (uploadError) {
+        logger.error({ err: uploadError }, "Error uploading to Cloudinary");
+      }
     }
 
     let responseText;

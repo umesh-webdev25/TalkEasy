@@ -31,20 +31,20 @@ import {
 const router = express.Router();
 
 // --- Chat Routes ---
-router.post('/chat/text/:session_id', optionalAuth, chatWithAgentText);
-router.post('/chat/voice/:session_id', optionalAuth, upload.single('audio'), logUploadDebug, chatWithAgent);
-router.get('/chat/history', optionalAuth, getAllChatHistories);
-router.get('/chat/history/:session_id', optionalAuth, getChatHistory);
-router.delete('/chat/history/:session_id', optionalAuth, clearSessionHistory);
-router.get('/chat/search', optionalAuth, searchChatMessages);
-router.put('/chat/star/:session_id', optionalAuth, toggleStar);
+router.post('/chat/text/:session_id', requireAuth, chatWithAgentText);
+router.post('/chat/voice/:session_id', requireAuth, upload.single('audio'), logUploadDebug, chatWithAgent);
+router.get('/chat/history', requireAuth, getAllChatHistories);
+router.get('/chat/history/:session_id', requireAuth, getChatHistory);
+router.delete('/chat/history/:session_id', requireAuth, clearSessionHistory);
+router.get('/chat/search', requireAuth, searchChatMessages);
+router.put('/chat/star/:session_id', requireAuth, toggleStar);
 
 // --- File Routes ---
-router.post('/files/upload', optionalAuth, upload.single('file'), logUploadDebug, uploadFile);
-router.post('/files/analyze/:file_id', optionalAuth, analyzeFile);
+router.post('/files/upload', requireAuth, upload.single('file'), logUploadDebug, uploadFile);
+router.post('/files/analyze/:file_id', requireAuth, analyzeFile);
 
-router.get('/files', optionalAuth, getUserFilesEndpoint);
-router.delete('/files/:file_id', optionalAuth, deleteFileEndpoint);
+router.get('/files', requireAuth, getUserFilesEndpoint);
+router.delete('/files/:file_id', requireAuth, deleteFileEndpoint);
 
 
 // --- Persona & Search Routes ---

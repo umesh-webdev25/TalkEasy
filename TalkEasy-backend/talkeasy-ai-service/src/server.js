@@ -20,7 +20,7 @@ const startServer = async () => {
     setupSockets(server);
 
     server.listen(PORT, () => {
-      logger.info(`🚀 AI Service running on port ${PORT}`);
+      logger.info(`AI Service running on port ${PORT}`);
     });
 
     process.on('SIGINT', async () => {
@@ -30,7 +30,7 @@ const startServer = async () => {
     });
 
   } catch (error) {
-    logger.error(`❌ AI Service failed to start: ${error.message}`);
+    logger.error(`AI Service failed to start: ${error.message}`);
     process.exit(1);
   }
 };
