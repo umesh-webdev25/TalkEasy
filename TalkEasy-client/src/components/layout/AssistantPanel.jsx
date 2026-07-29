@@ -235,16 +235,16 @@ const AssistantPanel = () => {
         <div className="space-y-3 overflow-y-auto custom-scrollbar flex-1 min-h-0 pr-1 pb-2">
           {files.map((file, idx) =>
             file.fileType !== "image" && file.fileType !== "audio" ? (
-              <PdfPreviewCard
-                key={idx}
-                file={file}
-                onClick={openFile}
+            <PdfPreviewCard
+                key={file.fileId || idx}
+              file={file}
+              onClick={openFile}
                 onRemove={(id) => deleteFile(file.fileId || id)}
-                className="max-w-full w-full my-1.5"
-              />
+              className="max-w-full w-full my-1.5"
+            />
             ) : (
               <div
-                key={idx}
+                key={file.fileId || idx}
                 onClick={() => openFile(file)}
                 className="
                   group
@@ -315,7 +315,7 @@ const AssistantPanel = () => {
 
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="mt-2 text-[10px] font-bold text-brand-blue hover:underline"
+                className="mt-2 text-[10px] font-bold text-brand-blue"
               >
                 Upload File
               </button>

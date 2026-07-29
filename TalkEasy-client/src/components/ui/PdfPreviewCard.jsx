@@ -16,6 +16,28 @@ const formatFileSize = (bytes) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+const getFileConfig = (filename) => {
+  const ext = filename.split('.').pop().toLowerCase();
+  switch (ext) {
+    case 'pdf':
+      return { label: 'PDF', bg: 'from-[#ff385c] via-[#f3203f] to-[#d81130]', fold: 'bg-[#8f051c]/90' };
+    case 'doc':
+    case 'docx':
+      return { label: 'DOC', bg: 'from-[#1a73e8] via-[#2b7de9] to-[#0d55b5]', fold: 'bg-[#0d4a96]/90' };
+    case 'xls':
+    case 'xlsx':
+    case 'csv':
+      return { label: 'XLS', bg: 'from-[#107c41] via-[#159a53] to-[#0c5e31]', fold: 'bg-[#094725]/90' };
+    case 'ppt':
+    case 'pptx':
+      return { label: 'PPT', bg: 'from-[#d24726] via-[#e25333] to-[#b8381c]', fold: 'bg-[#8f2a15]/90' };
+    case 'txt':
+      return { label: 'TXT', bg: 'from-[#64748b] via-[#475569] to-[#334155]', fold: 'bg-[#1e293b]/90' };
+    default:
+      return { label: ext.substring(0, 4).toUpperCase() || 'FILE', bg: 'from-[#64748b] via-[#475569] to-[#334155]', fold: 'bg-[#1e293b]/90' };
+  }
+};
+
 /**
  * Modern PDF Upload & Preview Card (ChatGPT / Gemini / Google Drive inspired)
  * Features a pristine Red Folded-Corner PDF badge with real-time page count extraction via pdfjs-dist.
@@ -48,14 +70,32 @@ const PdfPreviewCard = ({
   useEffect(() => {
     const name = file?.fileName || file?.name || 'Document.pdf';
     const size = file?.fileSize || file?.size || 0;
+    const isPdf = name.toLowerCase().endsWith('.pdf');
+    const isImg = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(name.split('.').pop().toLowerCase());
+    
     setFileName(name);
     setFileSizeStr(formatFileSize(size));
 
-    setLoading(true);
+    setLoading(isPdf);
     setThumbnail(null);
     setPageCount(null);
 
-    if (!targetResource) {
+    let objectUrl = null;
+
+    if (isImg) {
+      if (typeof targetResource === 'string') {
+        setThumbnail(targetResource);
+      } else if (targetResource) {
+        objectUrl = URL.createObjectURL(targetResource);
+        setThumbnail(objectUrl);
+      }
+      setLoading(false);
+      return () => {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      };
+    }
+
+    if (!targetResource || !isPdf) {
       setLoading(false);
       return;
     }
@@ -146,30 +186,36 @@ const PdfPreviewCard = ({
           <div className="w-full flex-1 rounded-xl overflow-hidden bg-white border border-slate-700 shadow-inner flex items-center justify-center">
             <img
               src={thumbnail}
-              alt="Page 1 Preview"
+              alt="Preview"
               className="w-full h-full object-contain bg-white"
             />
           </div>
           <span className="text-[9px] font-extrabold text-slate-300 mt-1 tracking-wider uppercase">
-            Page 1 Preview
+            {fileName.toLowerCase().endsWith('.pdf') ? 'Page 1 Preview' : 'Image Preview'}
           </span>
         </div>
       )}
 
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
-        {/* Compact Solid Red Folded-Corner PDF Badge */}
-        <div className="relative w-[32px] h-[38px] rounded-[9px] bg-gradient-to-b from-[#ff385c] via-[#f3203f] to-[#d81130] flex flex-col items-center justify-center shrink-0 shadow-md border border-red-400/30 group-hover:scale-[1.03] transition-transform duration-200">
-          {/* Authentic folded upper-right paper ear */}
-          <div className="absolute top-0 right-0 w-[10px] h-[10px] bg-[#8f051c]/90 rounded-bl-[4px] border-l border-b border-white/30 shadow-sm" />
-          
-          {loading ? (
-            <Loader2 size={13} className="animate-spin text-white mb-0.5" />
-          ) : (
-            <span className="text-[8.5px] font-black uppercase tracking-wider text-white drop-shadow-sm mt-0.5">
-              PDF
-            </span>
-          )}
-        </div>
+        {/* Compact Solid Folded-Corner Badge based on file type or Image Thumbnail */}
+        {thumbnail && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileName.split('.').pop().toLowerCase()) ? (
+          <div className="relative w-[32px] h-[38px] rounded-[9px] overflow-hidden shrink-0 shadow-md border border-white/10 group-hover:scale-[1.03] transition-transform duration-200 bg-white">
+            <img src={thumbnail} alt={fileName} className="w-full h-full object-cover" />
+          </div>
+        ) : (
+          <div className={`relative w-[32px] h-[38px] rounded-[9px] bg-gradient-to-b ${getFileConfig(fileName).bg} flex flex-col items-center justify-center shrink-0 shadow-md border border-white/10 group-hover:scale-[1.03] transition-transform duration-200`}>
+            {/* Authentic folded upper-right paper ear */}
+            <div className={`absolute top-0 right-0 w-[10px] h-[10px] ${getFileConfig(fileName).fold} rounded-bl-[4px] border-l border-b border-white/30 shadow-sm`} />
+            
+            {loading ? (
+              <Loader2 size={13} className="animate-spin text-white mb-0.5" />
+            ) : (
+              <span className="text-[8.5px] font-black uppercase tracking-wider text-white drop-shadow-sm mt-0.5">
+                {getFileConfig(fileName).label}
+              </span>
+            )}
+          </div>
+        )}
 
         {/* File Name & Size Details */}
         <div className="flex flex-col min-w-0 flex-1 justify-center">

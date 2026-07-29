@@ -197,7 +197,7 @@ export const deleteFileEndpoint = asyncHandler(async (req, res) => {
   const file = await fileRepository.findById(file_id);
   if (!file) throw new AppError("File not found", 404);
 
-  if (file.uploadedBy !== userId) {
+  if (file.uploadedBy.toString() !== userId.toString()) {
     throw new AppError("Not authorized to delete this file", 403);
   }
 

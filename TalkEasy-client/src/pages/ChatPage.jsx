@@ -218,9 +218,14 @@ const ChatPage = () => {
           )
         );
       } else {
+        console.error("File upload failed:", response);
         setStagedFiles((prev) => prev.filter((f) => f.fileId !== tempId));
       }
     }
+    
+    // Clear inputs so the same file can be selected again
+    if (imageInputRef.current) imageInputRef.current.value = "";
+    if (docInputRef.current) docInputRef.current.value = "";
   };
 
   const removeStagedFile = (fileId) => {
@@ -467,59 +472,6 @@ const ChatPage = () => {
               </div>
             </div>
 
-            {/* Suggested Prompts */}
-            {/* <div className="w-full mb-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-bold text-app-text">
-                  Suggested Prompts
-                </h3>
-                <button className="text-xs font-bold text-brand-blue hover:underline cursor-pointer">
-                  View all
-                </button>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                {[
-                  {
-                    icon: <Code size={20} className="text-blue-500" />,
-                    title: "Build a React dashboard",
-                    desc: "Create a modern dashboard with charts and analytics",
-                  },
-                  {
-                    icon: <BookOpen size={20} className="text-purple-500" />,
-                    title: "Explain quantum physics",
-                    desc: "Explain in simple terms with examples",
-                  },
-                  {
-                    icon: <Map size={20} className="text-green-500" />,
-                    title: "Create a travel plan",
-                    desc: "Plan a 7-day trip to Switzerland with budget",
-                  },
-                ].map((prompt, idx) => (
-                  <button
-                    key={idx}
-                    className="flex flex-col items-start p-5 bg-surface-solid border border-glass-border rounded-2xl hover:border-brand-blue/30 hover:shadow-md transition-all duration-300 text-left group cursor-pointer"
-                  >
-                    <div className="flex items-center justify-between w-full mb-3">
-                      <div className="p-2.5 rounded-lg bg-surface-solid-hover">
-                        {prompt.icon}
-                      </div>
-                      <div className="w-8 h-8 rounded-full bg-surface-solid-hover flex items-center justify-center group-hover:bg-brand-blue/10 transition-colors">
-                        <ArrowRight
-                          size={16}
-                          className="text-app-text-muted group-hover:text-brand-blue transition-colors"
-                        />
-                      </div>
-                    </div>
-                    <span className="text-sm font-bold text-app-text mb-1">
-                      {prompt.title}
-                    </span>
-                    <span className="text-xs text-app-text-secondary leading-relaxed">
-                      {prompt.desc}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div> */}
           </div>
         )}
 
@@ -637,14 +589,6 @@ const ChatPage = () => {
                   </button>
                 </div>
               )}
-
-              <button
-                type="button"
-                onClick={() => setWebSearch(!webSearch)}
-                className={`w-[44px] h-[44px] rounded-full flex items-center justify-center transition-colors cursor-pointer ${webSearch ? "text-brand-blue bg-brand-blue/10" : "text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover"}`}
-              >
-                <Globe size={18} />
-              </button>
 
               {/* Hidden File Inputs */}
               <input
