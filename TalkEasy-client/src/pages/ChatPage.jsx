@@ -425,9 +425,6 @@ const ChatPage = () => {
 
             {/* Quick Actions */}
             <div className="w-full mb-8">
-              <h3 className="text-sm font-bold text-app-text mb-4">
-                Quick Actions
-              </h3>
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 w-full">
                 {[
                   {

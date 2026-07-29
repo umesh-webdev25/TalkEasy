@@ -22,6 +22,24 @@ const chatSessionSchema = new mongoose.Schema({
     type: String
   },
 
+  isPinned: {
+    type: Boolean,
+    default: false
+  },
+
+  isArchived: {
+    type: Boolean,
+    default: false
+  },
+
+  model: {
+    type: String
+  },
+
+  lastMessage: {
+    type: String
+  },
+
   message_count: {
     type: Number,
     default: 0

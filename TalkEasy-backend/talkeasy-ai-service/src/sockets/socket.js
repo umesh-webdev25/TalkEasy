@@ -6,6 +6,8 @@ import { ttsService } from '../services/elevenLabs.service.js';
 import { chatRepository } from '../repositories/chat.repository.js';
 import { messageRepository } from '../repositories/message.repository.js';
 import { v4 as uuidv4 } from 'uuid';
+import { SOCKET_EVENTS } from '../constants/socketEvents.js';
+import { aiOrchestrator } from '../services/ai/aiOrchestrator.service.js';
 
 export const setupSockets = (httpServer) => {
   const io = new Server(httpServer, {
@@ -77,6 +79,46 @@ export const setupSockets = (httpServer) => {
         }
       } catch (error) {
         logger.error(`Socket message error: ${error.message}`);
+      }
+    });
+
+    socket.on(SOCKET_EVENTS.STREAM_START, async (payload) => {
+      try {
+        const { prompt, configType = 'default' } = payload;
+        if (!prompt) throw new Error("Prompt is required for streaming");
+
+        let session = await chatRepository.findBySessionId(session_id);
+        if (!session) {
+          session = await chatRepository.createSession({ session_id, user_id: userId });
+        }
+        
+        await messageRepository.createMessage({
+          sessionId: session._id,
+          user_id: userId || 'system',
+          role: 'user',
+          content: prompt
+        });
+
+        const promptParts = [{ text: prompt }]; 
+        const stream = await aiOrchestrator.processChatRequest(promptParts, { stream: true, configType });
+        
+        let accumulatedResponse = '';
+        for await (const chunk of stream) {
+            accumulatedResponse += chunk;
+            socket.emit(SOCKET_EVENTS.STREAM_CHUNK, { chunk });
+        }
+        
+        await messageRepository.createMessage({
+          sessionId: session._id,
+          user_id: userId || 'system',
+          role: 'assistant',
+          content: accumulatedResponse
+        });
+        
+        socket.emit(SOCKET_EVENTS.STREAM_END, { success: true });
+      } catch (error) {
+        logger.error(`Streaming error: ${error.message}`);
+        socket.emit(SOCKET_EVENTS.STREAM_ERROR, { message: error.message });
       }
     });
 

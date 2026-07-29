@@ -191,6 +191,21 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
   }
 
   await addMessage(session_id, 'assistant', responseText, userId);
+
+  // Generate dynamic title if this is the first message
+  if (!session || session.message_count === 1) {
+    try {
+      const titlePrompt = `Generate a short, concise 3-5 word title for a chat session that starts with this message. Output ONLY the title, no quotes or prefixes. Message: "${text}"`;
+      const generatedTitle = await llmService.generateResponse(titlePrompt, [], "en", "You are a title generator. Respond only with the title.");
+      if (generatedTitle) {
+        const cleanTitle = generatedTitle.replace(/^"|"$/g, '').trim();
+        await chatRepository.updateSession(session_id, { title: cleanTitle });
+      }
+    } catch (titleErr) {
+      logger.warn(`⚠️ Failed to generate dynamic title for session ${session_id}: ${titleErr.message}`);
+    }
+  }
+
   return res.json({ success: true, message: "Chat processed successfully", llm_response: responseText, session_id });
 });
 
@@ -254,6 +269,20 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
       }
     } catch (err) {
       logger.error(`❌ ElevenLabs TTS error: ${err.message}`);
+    }
+
+    // Generate dynamic title if this is the first message
+    if (!session || session.message_count === 1) {
+      try {
+        const titlePrompt = `Generate a short, concise 3-5 word title for a chat session that starts with this message. Output ONLY the title, no quotes or prefixes. Message: "${transcribedText}"`;
+        const generatedTitle = await llmService.generateResponse(titlePrompt, [], "en", "You are a title generator. Respond only with the title.");
+        if (generatedTitle) {
+          const cleanTitle = generatedTitle.replace(/^"|"$/g, '').trim();
+          await chatRepository.updateSession(session_id, { title: cleanTitle });
+        }
+      } catch (titleErr) {
+        logger.warn(`⚠️ Failed to generate dynamic title for voice session ${session_id}: ${titleErr.message}`);
+      }
     }
 
     return res.json({

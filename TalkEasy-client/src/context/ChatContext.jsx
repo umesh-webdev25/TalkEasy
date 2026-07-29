@@ -44,14 +44,17 @@ export const ChatProvider = ({ children }) => {
       const response = await fetch(`${API_BASE}/chat/history`, { headers: getHeaders() });
       const data = await response.json();
       if (data.success && data.chat_histories) {
-        const formatted = data.chat_histories.map(h => ({
-          id: h.session_id,
-          title: h.toolType ? `${h.toolType} Chat` : 'Chat Session',
-          time: new Date(h.last_updated || h.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          preview: h.messages && h.messages.length > 0 ? h.messages[h.messages.length - 1].content.substring(0, 30) + '...' : 'No messages yet',
-          isStarred: h.isStarred || false,
-          toolType: h.toolType || null
-        }));
+        const formatted = data.chat_histories.map(h => {
+          const chatTitle = h.toolType ? `${h.toolType} Chat` : 'Chat Session';
+          return {
+            id: h.session_id,
+            title: chatTitle,
+            time: new Date(h.last_updated || h.created_at || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            preview: h.messages && h.messages.length > 0 ? h.messages[h.messages.length - 1].content.substring(0, 30) + '...' : chatTitle,
+            isStarred: h.isStarred || false,
+            toolType: h.toolType || null
+          };
+        });
         setChats(formatted);
         if (formatted.length > 0 && !activeChatId) {
           setActiveChatId(formatted[0].id);
@@ -129,11 +132,12 @@ export const ChatProvider = ({ children }) => {
 
   const createNewChat = (initialText = '', toolType = null) => {
     const newId = Date.now().toString(); // Use a timestamp or UUID for new session
+    const chatTitle = toolType ? `${toolType} Chat` : 'New Conversation';
     const newChat = {
       id: newId,
-      title: toolType ? `${toolType} Chat` : 'New Conversation',
+      title: chatTitle,
       time: 'Just Now',
-      preview: initialText || 'No messages yet',
+      preview: initialText || chatTitle,
       isStarred: false,
       toolType: toolType
     };

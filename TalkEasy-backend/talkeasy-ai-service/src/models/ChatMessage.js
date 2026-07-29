@@ -34,6 +34,24 @@ const chatMessageSchema = new mongoose.Schema(
       type: Object,
       default: {},
     },
+
+    attachments: [{
+      type: String
+    }],
+
+    tokens: {
+      type: Number,
+      default: 0
+    },
+
+    latency: {
+      type: Number,
+      default: 0
+    },
+
+    model: {
+      type: String
+    },
   },
   {
     timestamps: true,

@@ -62,6 +62,10 @@ const fileSchema = new mongoose.Schema(
     metadata: {
       type: Object,
       default: {}
+    },
+    checksum: {
+      type: String,
+      index: true
     }
   },
   {

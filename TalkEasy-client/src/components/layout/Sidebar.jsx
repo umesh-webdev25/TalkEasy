@@ -372,7 +372,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                         setActiveChatId(chat.id);
                         if (window.innerWidth < 768) toggleSidebar();
                       }}
-                      className={`relative px-2 py-3 rounded-xl cursor-pointer group transition-all duration-300 border ${
+                      className={`relative px-2 py-2 rounded-xl cursor-pointer group transition-all duration-300 border ${
                         chat.id === activeChatId
                           ? "bg-surface-solid border-glass-border shadow-sm"
                           : "hover:bg-surface-solid-hover border-transparent"
@@ -395,8 +395,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                           className="w-[85%] bg-transparent border-b border-brand-blue text-sm text-app-text outline-none pr-6"
                         />
                       ) : (
-                        <p className="text-sm text-app-text-secondary truncate pr-6">
-                          {chat.preview}
+                        <p className="text-sm text-app-text font-medium truncate pr-6">
+                          {chat.title}
                         </p>
                       )}
 
