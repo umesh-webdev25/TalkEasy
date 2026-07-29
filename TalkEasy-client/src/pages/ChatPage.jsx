@@ -17,6 +17,7 @@ import {
   Sliders,
   VolumeX,
   Eye,
+  ArrowUpRight,
   Image,
   FileText,
   Monitor,
@@ -38,7 +39,11 @@ import PdfPreviewCard from "../components/ui/PdfPreviewCard";
 
 const getMediaUrl = (url) => {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("blob:") || url.startsWith("data:")) {
+  if (
+    url.startsWith("http") ||
+    url.startsWith("blob:") ||
+    url.startsWith("data:")
+  ) {
     return url;
   }
   const baseUrl = import.meta.env.VITE_SOCKET_URL || "http://localhost:3002";
@@ -196,7 +201,7 @@ const ChatPage = () => {
           fileType: file.type.startsWith("image/") ? "image" : "document",
           previewUrl: URL.createObjectURL(file),
           file: file,
-          isUploading: true
+          isUploading: true,
         },
       ]);
       setShowAttachMenu(false);
@@ -212,17 +217,17 @@ const ChatPage = () => {
                   fileName: response.fileName || f.fileName,
                   fileType: response.fileType || f.fileType,
                   fileUrl: response.fileUrl || "",
-                  isUploading: false
+                  isUploading: false,
                 }
-              : f
-          )
+              : f,
+          ),
         );
       } else {
         console.error("File upload failed:", response);
         setStagedFiles((prev) => prev.filter((f) => f.fileId !== tempId));
       }
     }
-    
+
     // Clear inputs so the same file can be selected again
     if (imageInputRef.current) imageInputRef.current.value = "";
     if (docInputRef.current) docInputRef.current.value = "";
@@ -231,6 +236,45 @@ const ChatPage = () => {
   const removeStagedFile = (fileId) => {
     setStagedFiles((prev) => prev.filter((f) => f.fileId !== fileId));
   };
+
+  const aiTools = [
+    {
+      icon: Monitor,
+      label: "Generate Code",
+      description: "Build applications and components with AI",
+      prompt: "Generate Code ",
+    },
+    {
+      icon: FileText,
+      label: "Summarize PDF",
+      description: "Summarize documents and ask questions",
+      prompt: "Summarize PDF ",
+    },
+    {
+      icon: Palette,
+      label: "Create Images",
+      description: "Generate illustrations and creative artwork",
+      prompt: "Create Images ",
+    },
+    {
+      icon: BarChart2,
+      label: "Analyze Data",
+      description: "Explore insights from Excel and CSV files",
+      prompt: "Analyze Data ",
+    },
+    {
+      icon: PenLine,
+      label: "Write Email",
+      description: "Create clear and professional email drafts",
+      prompt: "Write Email ",
+    },
+    {
+      icon: Globe,
+      label: "Translate Text",
+      description: "Translate content across 100+ languages",
+      prompt: "Translate Text ",
+    },
+  ];
 
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-transparent relative mt-0">
@@ -248,7 +292,11 @@ const ChatPage = () => {
                 {/* AI Avatar */}
                 {!isUser && (
                   <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-transparent overflow-hidden">
-                    <img src="/robot.png" alt="AI" className="w-full h-full object-contain" />
+                    <img
+                      src="/robot.png"
+                      alt="AI"
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 )}
 
@@ -305,7 +353,7 @@ const ChatPage = () => {
                                       ...file,
                                       fileUrl: getMediaUrl(file.fileUrl),
                                       fileName: file.fileName,
-                                      fileSize: file.fileSize || file.size
+                                      fileSize: file.fileSize || file.size,
                                     }}
                                     className="my-1"
                                   />
@@ -325,48 +373,14 @@ const ChatPage = () => {
                     >
                       <span>{message.time}</span>
 
-                      {isUser ? (
-                        <Check
-                          size={12}
-                          className="text-brand-blue dark:text-brand-cyan"
-                        />
-                      ) : (
+                      {!isUser && (
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => handleCopy(message.text, message.id)}
                             className="hover:text-app-text transition-colors"
                             title="Copy message"
                           >
-                            {copiedId === message.id ? (
-                              <Check size={13} className="text-green-500" />
-                            ) : (
-                              <Copy size={13} />
-                            )}
-                          </button>
-
-                          <button
-                            onClick={() =>
-                              handleSpeak(message.text, message.id)
-                            }
-                            className="hover:text-app-text transition-colors"
-                            title="Text to speech"
-                          >
-                            {speakingId === message.id ? (
-                              <VolumeX
-                                size={13}
-                                className="text-brand-blue animate-pulse"
-                              />
-                            ) : (
-                              <Volume2 size={13} />
-                            )}
-                          </button>
-
-                          <button className="hover:text-app-text transition-colors">
-                            <ThumbsUp size={13} />
-                          </button>
-
-                          <button className="hover:text-app-text transition-colors">
-                            <ThumbsDown size={13} />
+                            <Copy size={13} />
                           </button>
                         </div>
                       )}
@@ -427,49 +441,138 @@ const ChatPage = () => {
             </div>
 
             {/* Quick Actions */}
-            <div className="w-full mb-8">
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 w-full">
-                {[
-                  {
-                    icon: <Monitor size={22} className="text-app-text-muted" />,
-                    label: "Generate Code",
-                  },
-                  {
-                    icon: <FileText size={22} className="text-red-500" />,
-                    label: "Summarize PDF",
-                  },
-                  {
-                    icon: <Palette size={22} className="text-purple-500" />,
-                    label: "Create Images",
-                  },
-                  {
-                    icon: <BarChart2 size={22} className="text-green-500" />,
-                    label: "Analyze Data",
-                  },
-                  {
-                    icon: <PenLine size={22} className="text-orange-500" />,
-                    label: "Write Email",
-                  },
-                  {
-                    icon: <Globe size={22} className="text-app-text-muted" />,
-                    label: "Translate Text",
-                  },
-                ].map((action, idx) => (
-                  <button
-                    key={idx}
-                    className="flex flex-col items-center justify-center p-4 bg-surface-solid border border-glass-border rounded-2xl hover:border-brand-blue/30 hover:shadow-md transition-all duration-300 cursor-pointer"
-                  >
-                    <div className="mb-3 p-3 rounded-xl bg-surface-solid-hover">
-                      {action.icon}
-                    </div>
-                    <span className="text-xs font-bold text-app-text text-center">
-                      {action.label}
-                    </span>
-                  </button>
-                ))}
+           <div className="
+  w-full
+  max-w-[360px]
+  sm:max-w-[640px]
+  md:max-w-[768px]
+  lg:max-w-[1024px]
+  xl:max-w-[1280px]
+  2xl:max-w-[1440px]
+  mx-auto
+  px-4
+">
+              {/* Section heading */}
+              <div className="flex items-center justify-between gap-4 mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-glass-border bg-surface-solid shadow-sm">
+                    <Sparkles
+                      size={18}
+                      strokeWidth={2}
+                      className="text-app-text"
+                    />
+                  </div>
+
+                  <div>
+                    <h3 className="text-base font-bold text-app-text">
+                      AI Tools
+                    </h3>
+                    <p className="mt-0.5 text-xs text-app-text-secondary">
+                      Choose a tool to start your next task
+                    </p>
+                  </div>
+                </div>
+
+                <span className="hidden sm:inline-flex rounded-full border border-glass-border bg-surface-solid px-3 py-1 text-[11px] font-semibold text-app-text-secondary">
+                  {aiTools.length} tools
+                </span>
+              </div>
+
+              {/* Tools grid */}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+                {aiTools.map((action) => {
+                  const Icon = action.icon;
+
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => setInputValue(action.prompt)}
+                      className="
+            group relative flex min-h-[150px] w-full
+            flex-col items-start overflow-hidden rounded-2xl
+            border border-glass-border bg-surface-solid p-5
+            text-left shadow-sm
+            transition-all duration-300 ease-out
+            hover:-translate-y-1
+            hover:border-app-text/20
+            hover:bg-surface-solid-hover
+            hover:shadow-lg
+            focus-visible:outline-none
+            focus-visible:ring-2
+            focus-visible:ring-app-text/30
+            focus-visible:ring-offset-2
+            active:translate-y-0
+          "
+                    >
+                      {/* Decorative background */}
+                      <div
+                        aria-hidden="true"
+                        className="
+              absolute -right-8 -top-8 h-24 w-24
+              rounded-full bg-app-text/[0.03]
+              transition-transform duration-500
+              group-hover:scale-150
+            "
+                      />
+
+                      {/* Icon */}
+                      <div
+                        className="
+              relative z-10 mb-4 flex h-11 w-11
+              items-center justify-center rounded-xl
+              border border-glass-border bg-app-bg
+              shadow-sm transition-all duration-300
+              group-hover:scale-105
+              group-hover:shadow-md
+            "
+                      >
+                        <Icon
+                          size={21}
+                          strokeWidth={1.8}
+                          className="text-app-text"
+                        />
+                      </div>
+
+                      {/* Content */}
+                      <div className="relative z-10 flex flex-1 flex-col">
+                        <span className="mb-1.5 text-sm font-bold text-app-text">
+                          {action.label}
+                        </span>
+
+                        <span className="max-w-[240px] text-xs font-medium leading-5 text-app-text-secondary">
+                          {action.description}
+                        </span>
+                      </div>
+
+                      {/* Hover action */}
+                      <div
+                        className="
+              relative z-10 mt-4 flex w-full items-center
+              justify-between border-t border-glass-border/70
+              pt-3
+            "
+                      >
+                        <span className="text-[11px] font-semibold text-app-text-secondary transition-colors group-hover:text-app-text">
+                          Start now
+                        </span>
+
+                        <ArrowUpRight
+                          size={15}
+                          className="
+                text-app-text-secondary
+                transition-all duration-300
+                group-hover:-translate-y-0.5
+                group-hover:translate-x-0.5
+                group-hover:text-app-text
+              "
+                        />
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-
           </div>
         )}
 
@@ -530,7 +633,7 @@ const ChatPage = () => {
                       <X size={12} />
                     </button>
                   </div>
-                )
+                ),
               )}
             </div>
           )}
