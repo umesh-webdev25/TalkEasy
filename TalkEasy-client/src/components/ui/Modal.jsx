@@ -33,7 +33,7 @@ const Modal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 mt-45" >
       {/* Backdrop */}
       {/* <div 
-        className="absolute inset-0 bg-slate-900/60  backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-slate-900/80 transition-opacity duration-300"
         onClick={onClose}
       />
        */}

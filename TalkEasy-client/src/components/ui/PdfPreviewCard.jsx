@@ -20,21 +20,21 @@ const getFileConfig = (filename) => {
   const ext = filename.split('.').pop().toLowerCase();
   switch (ext) {
     case 'pdf':
-      return { label: 'PDF', bg: 'from-[#ff385c] via-[#f3203f] to-[#d81130]', fold: 'bg-[#8f051c]/90' };
+      return { label: 'PDF', bg: 'bg-[#f3203f]', fold: 'bg-[#8f051c]/90' };
     case 'doc':
     case 'docx':
-      return { label: 'DOC', bg: 'from-[#1a73e8] via-[#2b7de9] to-[#0d55b5]', fold: 'bg-[#0d4a96]/90' };
+      return { label: 'DOC', bg: 'bg-[#2b7de9]', fold: 'bg-[#0d4a96]/90' };
     case 'xls':
     case 'xlsx':
     case 'csv':
-      return { label: 'XLS', bg: 'from-[#107c41] via-[#159a53] to-[#0c5e31]', fold: 'bg-[#094725]/90' };
+      return { label: 'XLS', bg: 'bg-[#159a53]', fold: 'bg-[#094725]/90' };
     case 'ppt':
     case 'pptx':
-      return { label: 'PPT', bg: 'from-[#d24726] via-[#e25333] to-[#b8381c]', fold: 'bg-[#8f2a15]/90' };
+      return { label: 'PPT', bg: 'bg-[#e25333]', fold: 'bg-[#8f2a15]/90' };
     case 'txt':
-      return { label: 'TXT', bg: 'from-[#64748b] via-[#475569] to-[#334155]', fold: 'bg-[#1e293b]/90' };
+      return { label: 'TXT', bg: 'bg-[#475569]', fold: 'bg-[#1e293b]/90' };
     default:
-      return { label: ext.substring(0, 4).toUpperCase() || 'FILE', bg: 'from-[#64748b] via-[#475569] to-[#334155]', fold: 'bg-[#1e293b]/90' };
+      return { label: ext.substring(0, 4).toUpperCase() || 'FILE', bg: 'bg-[#475569]', fold: 'bg-[#1e293b]/90' };
   }
 };
 
@@ -182,7 +182,7 @@ const PdfPreviewCard = ({
     >
       {/* Floating Large Page 1 Tooltip Preview on Hover */}
       {thumbnail && isHovered && (
-        <div className="absolute left-0 bottom-full mb-2 z-50 p-1.5 rounded-2xl bg-[#121419]/95 border border-white/15 shadow-2xl backdrop-blur-xl w-40 h-52 flex flex-col items-center pointer-events-none transition-all duration-200">
+        <div className="absolute left-0 bottom-full mb-2 z-50 p-1.5 rounded-2xl bg-[#121419] border border-white/15 shadow-2xl w-40 h-52 flex flex-col items-center pointer-events-none transition-all duration-200">
           <div className="w-full flex-1 rounded-xl overflow-hidden bg-white border border-slate-700 shadow-inner flex items-center justify-center">
             <img
               src={thumbnail}
@@ -203,7 +203,7 @@ const PdfPreviewCard = ({
             <img src={thumbnail} alt={fileName} className="w-full h-full object-cover" />
           </div>
         ) : (
-          <div className={`relative w-[32px] h-[38px] rounded-[9px] bg-gradient-to-b ${getFileConfig(fileName).bg} flex flex-col items-center justify-center shrink-0 shadow-md border border-white/10 group-hover:scale-[1.03] transition-transform duration-200`}>
+          <div className={`relative w-[32px] h-[38px] rounded-[9px] ${getFileConfig(fileName).bg} flex flex-col items-center justify-center shrink-0 shadow-md border border-white/10 group-hover:scale-[1.03] transition-transform duration-200`}>
             {/* Authentic folded upper-right paper ear */}
             <div className={`absolute top-0 right-0 w-[10px] h-[10px] ${getFileConfig(fileName).fold} rounded-bl-[4px] border-l border-b border-white/30 shadow-sm`} />
             

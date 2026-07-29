@@ -10,6 +10,7 @@ import {
   Search,
   Trash,
   X,
+  SquarePen ,
   MoreVertical,
   Share2,
   Pin,
@@ -246,21 +247,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* Header */}
           <div className="p-5 flex items-center justify-between">
             <div className="flex items-center gap-3 ml-2">
-              <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center text-white mb-1">
-                <svg
-                  className="w-7 h-7"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                  />
-                </svg>
-              </div>
+              <img
+                src="/talkeasy.svg"
+                alt="TalkEasy Logo"
+                className="w-8 h-8 object-contain dark:invert mb-1"
+              />
               <span className="font-extrabold text-lg text-app-text tracking-tight">
                 TalkEasy
               </span>
@@ -276,7 +267,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           <div className="px-4 mb-4">
             <Button
               onClick={() => createNewChat()}
-              className="w-full justify-between py-3 rounded-xl text-white bg-[#0c6dff] hover:bg-[#0c6dff]"
+              variant="primary"
+              className="w-full justify-between py-3 rounded-xl"
             >
               <span className="flex items-center gap-2">
                 <Plus size={18} strokeWidth={2.5} />
@@ -314,7 +306,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   />
                   <span className="flex-1 text-left">{item.label}</span>
                   {item.badge && (
-                    <span className="bg-brand-blue dark:bg-brand-cyan/20 text-white dark:text-brand-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    <span className="bg-brand-blue dark:bg-brand-cyan/20 text-on-brand dark:text-brand-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">
                       {item.badge}
                     </span>
                   )}

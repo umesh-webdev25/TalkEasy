@@ -401,12 +401,10 @@ const ChatPage = () => {
             {/* Hero */}
             <div className="flex flex-col items-center text-center mt-4 mb-10">
               <div className="w-40 h-40 relative mb-6 flex items-center justify-center">
-                {/* Layered ambient glow */}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-blue/30 via-blue-300/20 to-cyan-300/30 rounded-full blur-2xl animate-pulse-slow"></div>
+                <div className="absolute inset-0 bg-brand-blue/20 rounded-full blur-2xl animate-pulse-slow"></div>
                 <div className="absolute inset-4 bg-brand-blue/10 rounded-full blur-xl"></div>
 
-                {/* Rotating gradient ring */}
-                <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-brand-blue/20 via-transparent to-cyan-300/20 animate-spin-slow"></div>
+                <div className="absolute inset-0 rounded-full bg-brand-blue/10 animate-spin-slow"></div>
 
                 <img
                   src="/robot.png"
@@ -417,7 +415,7 @@ const ChatPage = () => {
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-app-text mb-3 tracking-tight animate-fade-in-up">
                 Welcome to{" "}
-                <span className="bg-gradient-to-r from-brand-blue to-cyan-500 bg-clip-text text-transparent">
+                <span className="text-brand-blue dark:text-brand-cyan">
                   TalkEasy AI
                 </span>
               </h2>
@@ -433,7 +431,7 @@ const ChatPage = () => {
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 w-full">
                 {[
                   {
-                    icon: <Monitor size={22} className="text-blue-500" />,
+                    icon: <Monitor size={22} className="text-app-text-muted" />,
                     label: "Generate Code",
                   },
                   {
@@ -453,7 +451,7 @@ const ChatPage = () => {
                     label: "Write Email",
                   },
                   {
-                    icon: <Globe size={22} className="text-blue-500" />,
+                    icon: <Globe size={22} className="text-app-text-muted" />,
                     label: "Translate Text",
                   },
                 ].map((action, idx) => (
@@ -478,7 +476,7 @@ const ChatPage = () => {
         {/* Typing indicator */}
         {typing && (
           <div className="flex items-start gap-3.5">
-            <div className="w-9 h-9 rounded-xl bg-brand-blue flex-shrink-0 flex items-center justify-center text-white active-glow">
+            <div className="w-9 h-9 rounded-xl bg-brand-blue flex-shrink-0 flex items-center justify-center text-on-brand active-glow">
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -544,7 +542,7 @@ const ChatPage = () => {
             <div className="flex items-center gap-1.5 pl-2 relative">
               <button
                 type="button"
-                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-white bg-brand-blue shrink-0 shadow-md hover:scale-105 transition-transform"
+                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-on-brand bg-brand-blue shrink-0 shadow-md hover:scale-105 transition-transform"
               >
                 <Sparkles size={18} />
               </button>
@@ -629,7 +627,7 @@ const ChatPage = () => {
               <button
                 type="submit"
                 disabled={!inputValue.trim() && stagedFiles.length === 0}
-                className="w-[44px] h-[44px] rounded-full bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-white hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                className="w-[44px] h-[44px] rounded-full bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
               >
                 <Send size={16} className="-ml-0.5" />
               </button>
@@ -644,7 +642,7 @@ const ChatPage = () => {
 
       {/* IM-MER-SIVE Voice Mode Overlay */}
       {voiceMode && (
-        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/90 dark:bg-black/95 backdrop-blur-2xl p-6">
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950 dark:bg-[#07090e] p-6">
           {/* Close Voice Overlay */}
           <button
             onClick={() => {

@@ -21,7 +21,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute w-52 h-52 rounded-full bg-gradient-to-r from-brand-blue via-brand-cyan to-brand-violet opacity-60 filter blur-3xl"
+              className="absolute w-52 h-52 rounded-full bg-brand-blue/60 filter blur-3xl"
             />
           )}
         </AnimatePresence>
@@ -36,11 +36,11 @@ const VoiceOrb = ({ isListening, onClick }) => {
             scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
             rotate: { duration: 25, repeat: Infinity, ease: "linear" }
           }}
-          className="relative w-44 h-44 rounded-full p-[2px] bg-gradient-to-r from-brand-blue/30 via-brand-cyan/20 to-brand-violet/30 flex items-center justify-center cursor-pointer shadow-2xl"
+          className="relative w-44 h-44 rounded-full p-[2px] bg-brand-blue/30 flex items-center justify-center cursor-pointer shadow-2xl"
           onClick={onClick}
         >
           {/* Inner glass orb container */}
-          <div className="w-full h-full rounded-full glass-panel bg-white/5 dark:bg-black/40 backdrop-blur-3xl flex items-center justify-center overflow-hidden border border-white/20">
+          <div className="w-full h-full rounded-full bg-white dark:bg-[#0d1016] flex items-center justify-center overflow-hidden border border-white/20">
             {/* Spinning background gradients */}
             <motion.div
               animate={isListening ? {
@@ -49,7 +49,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
                 scale: [1, 1.2, 0.9, 1.1, 1]
               } : { x: 0, y: 0 }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute w-36 h-36 rounded-full bg-gradient-to-tr from-brand-blue/40 via-brand-cyan/20 to-brand-violet/40 filter blur-xl opacity-80"
+              className="absolute w-36 h-36 rounded-full bg-brand-blue/40 filter blur-xl opacity-80"
             />
 
             {/* Core Orb Sphere */}
@@ -61,7 +61,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
                 backgroundColor: ['rgba(0, 102, 255, 0.2)', 'rgba(0, 209, 255, 0.25)', 'rgba(132, 71, 255, 0.2)', 'rgba(0, 102, 255, 0.2)']
               } : {}}
               transition={{ duration: 4, repeat: Infinity }}
-              className="relative w-28 h-28 rounded-full bg-white/10 dark:bg-white/5 border border-white/20 dark:border-white/10 shadow-inner flex items-center justify-center z-10 backdrop-blur-md"
+              className="relative w-28 h-28 rounded-full bg-slate-100 dark:bg-[#1a1e27] border border-white/20 dark:border-white/10 shadow-inner flex items-center justify-center z-10"
             >
               {/* Mic Icon */}
               <motion.div

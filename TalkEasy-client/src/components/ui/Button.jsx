@@ -22,7 +22,7 @@ const Button = ({
   };
 
   const variantStyles = {
-    primary: 'bg-gradient-to-r from-brand-blue to-brand-cyan text-white active-glow hover:scale-[1.02] shadow-lg shadow-brand-blue/20',
+    primary: 'bg-brand-blue text-on-brand active-glow hover:scale-[1.02] shadow-lg shadow-brand-blue/20',
     secondary: 'bg-glass-input-bg border border-glass-border text-app-text hover:bg-surface-solid-hover',
     outline: 'border border-glass-border text-app-text bg-transparent hover:bg-surface-solid-hover',
     ghost: 'text-app-text-secondary hover:text-app-text hover:bg-surface-solid-hover',

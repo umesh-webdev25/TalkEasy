@@ -57,12 +57,12 @@ const LoginPage = () => {
       <div className="w-full max-w-[440px] z-10">
         {/* Brand Logo Header */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-12 h-12 bg-brand-blue rounded-2xl flex items-center justify-center text-white active-glow shadow-xl shadow-brand-blue/20 mb-3 animate-pulse">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
-            </svg>
-          </div>
-          <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-slate-900 via-slate-800 to-slate-600 dark:from-white dark:via-slate-200 dark:to-slate-400 bg-clip-text text-transparent">
+          <img
+            src="/talkeasy.svg"
+            alt="TalkEasy Logo"
+            className="w-10 h-10 object-contain dark:invert mb-4"
+          />
+          <span className="font-extrabold text-2xl tracking-tight text-slate-900 dark:text-white">
             TalkEasy AI
           </span>
           <p className="text-xs font-semibold text-app-text-muted uppercase tracking-widest mt-1.5">Lumina Nexus Interface</p>

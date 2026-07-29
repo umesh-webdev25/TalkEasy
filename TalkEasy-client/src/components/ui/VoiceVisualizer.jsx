@@ -32,7 +32,7 @@ const VoiceVisualizer = ({ isPlaying = true }) => {
   };
 
   return (
-    <div className="flex items-center justify-center gap-[3px] h-24 px-6 py-2 rounded-2xl bg-white/5 dark:bg-black/20 border border-white/5 backdrop-blur-sm w-full max-w-md mx-auto">
+    <div className="flex items-center justify-center gap-[3px] h-24 px-6 py-2 rounded-2xl bg-slate-100 dark:bg-[#0d1016] border border-white/5 w-full max-w-md mx-auto">
       {bars.map((_, idx) => (
         <motion.div
           key={idx}
