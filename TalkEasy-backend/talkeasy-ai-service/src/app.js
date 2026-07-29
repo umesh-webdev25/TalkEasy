@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { env } from './config/env.js';
 import { globalErrorHandler, AppError } from 'shared';
+import os from 'os';
 import apiRoutes from './routes/api.routes.js';
 import documentRoutes from './routes/document.routes.js';
 import path from 'path';
@@ -25,7 +26,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploads folder statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(os.tmpdir(), 'talkeasy-uploads')));
 
 // Routes
 app.use('/api', apiRoutes);

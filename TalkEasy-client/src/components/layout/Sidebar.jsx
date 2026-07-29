@@ -180,23 +180,34 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   ];
 
   const userProfileTrigger = (
-    <div className="flex items-center gap-2 cursor-pointer group p-2 hover:bg-surface-solid-hover rounded-xl transition-colors w-full">
-      <div className="w-10 h-9 rounded-full bg-brand-blue/10 flex flex-shrink-0 items-center justify-center text-sm font-bold text-brand-blue border border-glass-border">
+    <div 
+      className={`flex items-center cursor-pointer group transition-all duration-300 rounded-xl border border-transparent hover:border-glass-border hover:bg-surface-solid-hover hover:shadow-sm ${
+        isOpen ? 'w-full p-2 gap-3' : 'w-12 h-12 mx-auto justify-center p-0'
+      }`}
+    >
+      <div className={`rounded-full flex flex-shrink-0 items-center justify-center font-bold text-brand-blue dark:text-brand-cyan bg-gradient-to-br from-brand-blue/20 to-transparent border border-brand-blue/30 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${isOpen ? 'w-10 h-10 text-sm' : 'w-10 h-10 text-base'}`}>
         {userInitials || "U"}
       </div>
-      <div
-        className={`flex-col text-left flex-1 min-w-0 transition-opacity duration-300 ${!isOpen ? "hidden" : "flex"}`}
-      >
-        <span className="text-sm font-bold text-app-text truncate block">
-          {user
-            ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
-              "TalkEasy User"
-            : "TalkEasy User"}
-        </span>
-        <span className="text-[10px] text-app-text-muted truncate block">
-          {user?.email || "user@talkeasy.com"}
-        </span>
-      </div>
+      
+      {isOpen && (
+        <div className="flex-col text-left flex-1 min-w-0 transition-opacity duration-300 flex">
+          <span className="text-sm font-extrabold text-app-text truncate block tracking-tight group-hover:text-brand-blue dark:group-hover:text-brand-cyan transition-colors">
+            {user
+              ? `${user.first_name || ""} ${user.last_name || ""}`.trim() ||
+                "TalkEasy User"
+              : "TalkEasy User"}
+          </span>
+          <span className="text-[10px] font-medium text-app-text-muted truncate block">
+            {user?.email || "user@talkeasy.com"}
+          </span>
+        </div>
+      )}
+
+      {isOpen && (
+        <div className="flex-shrink-0 text-app-text-muted opacity-40 group-hover:opacity-100 transition-opacity pr-1">
+          <MoreVertical size={16} />
+        </div>
+      )}
     </div>
   );
 
@@ -240,48 +251,71 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         className={`fixed md:relative top-0 bottom-0 left-0 z-45 flex flex-col glass-panel h-[100dvh] ${isMounted ? "transition-all duration-300" : "transition-none"} overflow-hidden ${
           isOpen
             ? "w-60 translate-x-0 opacity-100 border-r border-glass-border"
-            : "w-0 -translate-x-full opacity-0 pointer-events-none border-none"
+            : "w-0 md:w-[76px] -translate-x-full md:translate-x-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto border-none md:border-r md:border-glass-border"
         }`}
       >
-        <div className="w-60 flex flex-col h-full shrink-0">
+        <div className="flex flex-col h-full w-full shrink-0">
           {/* Header */}
-          <div className="p-5 flex items-center justify-between">
-            <div className="flex items-center gap-3 ml-2">
-              <img
-                src="/talkeasy.svg"
-                alt="TalkEasy Logo"
-                className="w-8 h-8 object-contain dark:invert mb-1"
-              />
-              <span className="font-extrabold text-lg text-app-text tracking-tight">
-                TalkEasy
-              </span>
-            </div>
+          <div className={`p-5 flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
+            {isOpen && (
+              <div className="flex items-center gap-3 ml-2">
+                <img
+                  src="/talkeasy.svg"
+                  alt="TalkEasy Logo"
+                  className="w-8 h-8 object-contain dark:invert mb-1"
+                />
+                <span className="font-extrabold text-lg text-app-text tracking-tight">
+                  TalkEasy
+                </span>
+              </div>
+            )}
             <button
               onClick={toggleSidebar}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-app-text-muted hover:bg-surface-solid-hover transition-colors"
+              className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isOpen ? 'text-app-text-muted hover:bg-surface-solid-hover' : 'hover:bg-surface-solid-hover bg-transparent'}`}
+              title={isOpen ? "Close Sidebar" : "Open Sidebar"}
             >
-              <PanelLeft size={25} />
+              {isOpen ? (
+                <PanelLeft size={25} />
+              ) : (
+                <img
+                  src="/talkeasy.svg"
+                  alt="TalkEasy Logo"
+                  className="w-7 h-7 object-contain dark:invert"
+                />
+              )}
             </button>
           </div>
 
-          <div className="px-4 mb-4">
+          <div className="px-4 mb-4 flex justify-center">
             <Button
-              onClick={() => createNewChat()}
+              onClick={() => {
+                setActiveSidebarView("chats");
+                createNewChat();
+                if (!isOpen && window.innerWidth >= 768) toggleSidebar();
+                if (isOpen && window.innerWidth < 768) toggleSidebar();
+              }}
               variant="primary"
-              className="w-full justify-between py-3 rounded-xl"
+              className={`rounded-xl transition-all duration-300 ${isOpen ? 'w-full justify-between py-3' : 'w-11 h-11 p-0 flex items-center justify-center rounded-2xl'}`}
+              title={!isOpen ? "New Chat" : ""}
             >
-              <span className="flex items-center gap-2">
-                <Plus size={18} strokeWidth={2.5} />
-                New Chat
-              </span>
+              {isOpen ? (
+                <span className="flex items-center gap-2">
+                  <Plus size={18} strokeWidth={2.5} />
+                  New Chat
+                </span>
+              ) : (
+                <Plus size={20} strokeWidth={2.5} />
+              )}
             </Button>
           </div>
 
-          <div className="px-5 mb-2 mt-2">
-            <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-wider">
-              Main
-            </span>
-          </div>
+          {isOpen && (
+            <div className="px-5 mb-2 mt-2">
+              <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-wider">
+                Main
+              </span>
+            </div>
+          )}
           <nav className="px-3 space-y-1 mb-4">
             {navItems.map((item, idx) => {
               const Icon = item.icon;
@@ -289,8 +323,14 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               return (
                 <button
                   key={idx}
-                  onClick={() => setActiveSidebarView(item.id)}
-                  className={`w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
+                  onClick={() => {
+                    setActiveSidebarView(item.id);
+                    if (!isOpen && window.innerWidth >= 768) toggleSidebar();
+                  }}
+                  title={!isOpen ? item.label : ""}
+                  className={`flex items-center rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
+                    isOpen ? 'w-full px-3.5 py-2.5 gap-3.5' : 'w-11 h-11 mx-auto justify-center mb-1'
+                  } ${
                     isActive
                       ? "bg-brand-blue/10 text-brand-blue dark:text-brand-cyan"
                       : "text-app-text-secondary hover:bg-surface-solid-hover"
@@ -304,8 +344,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                         : "text-app-text-muted"
                     }
                   />
-                  <span className="flex-1 text-left">{item.label}</span>
-                  {item.badge && (
+                  {isOpen && <span className="flex-1 text-left">{item.label}</span>}
+                  {isOpen && item.badge && (
                     <span className="bg-brand-blue dark:bg-brand-cyan/20 text-on-brand dark:text-brand-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">
                       {item.badge}
                     </span>
@@ -317,7 +357,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
           {(activeSidebarView === "chats" ||
             activeSidebarView === "history" ||
-            activeSidebarView === "starred") && (
+            activeSidebarView === "starred") && isOpen && (
             <>
               <div className="px-5 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
                 <span>
@@ -477,7 +517,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </>
           )}
 
-          {activeSidebarView === "image_generator" && (
+          {activeSidebarView === "image_generator" && isOpen && (
             <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
               <div className="px-2 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider">
                 Image Generator
@@ -505,7 +545,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </div>
           )}
 
-          {activeSidebarView === "tools" && (
+          {activeSidebarView === "tools" && isOpen && (
             <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
               <div className="flex items-center gap-2 px-2 pb-3 mt-1">
                 <Sparkles size={16} className="text-app-text" />

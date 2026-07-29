@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, Sun, Moon, Search, LayoutGrid, ChevronDown } from "lucide-react";
+import { PanelLeft, Sun, Moon, Search, LayoutGrid, ChevronDown } from "lucide-react";
 
 import { useTheme } from "../../context/ThemeContext";
 import GlobalSearchModal from "../ui/GlobalSearchModal";
@@ -11,13 +11,18 @@ const Navbar = ({ onMenuClick, sidebarOpen }) => {
   return (
     <header className="flex items-center justify-between px-3 sm:px-4 md:px-6 py-3 border-b border-glass-border bg-glass-bg backdrop-blur-md sticky top-0 z-30">
       <div className="flex items-center gap-2 sm:gap-3.5">
-        {/* Menu toggle */}
+        {/* Menu toggle and Logo (when sidebar closed) */}
         {!sidebarOpen && (
           <button
             onClick={onMenuClick}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-app-text-secondary hover:bg-surface-solid-hover transition-colors"
+            className="md:hidden min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl hover:bg-surface-solid-hover transition-colors mr-1 cursor-pointer"
+            title="Open Sidebar"
           >
-            <Menu size={20} />
+            <img
+              src="/talkeasy.svg"
+              alt="TalkEasy Logo"
+              className="w-7 h-7 object-contain dark:invert"
+            />
           </button>
         )}
 

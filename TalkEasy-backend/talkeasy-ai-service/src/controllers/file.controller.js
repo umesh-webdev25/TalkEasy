@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
@@ -29,7 +30,7 @@ export const uploadFile = asyncHandler(async (req, res) => {
   if (['.png', '.jpg', '.jpeg', '.webp'].includes(ext)) fileType = "image";
   else if (['.mp3', '.wav', '.m4a', '.webm', '.ogg'].includes(ext)) fileType = "audio";
 
-  const uploadDir = path.join(process.cwd(), "uploads");
+  const uploadDir = path.join(os.tmpdir(), "talkeasy-uploads");
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
@@ -119,7 +120,10 @@ export const analyzeFile = asyncHandler(async (req, res) => {
     throw new AppError(`File reference '${file_id}' not found in database.`, 404);
   }
 
-  const filePath = path.join(process.cwd(), file.fileUrl.startsWith('/') ? file.fileUrl.substring(1) : file.fileUrl);
+  const isTmp = file.fileUrl.startsWith('/uploads/');
+  const fileName = isTmp ? file.fileUrl.split('/').pop() : file.fileUrl.substring(1);
+  const baseDir = isTmp ? path.join(os.tmpdir(), 'talkeasy-uploads') : process.cwd();
+  const filePath = path.join(baseDir, fileName);
   if (!fs.existsSync(filePath) && (!file.extractedText || file.extractedText.startsWith('['))) {
     throw new AppError("The physical file could not be located on the filesystem and no text content was previously extracted.", 404);
   }
@@ -212,7 +216,8 @@ export const deleteFileEndpoint = asyncHandler(async (req, res) => {
   }
 
   if (file.fileUrl && file.fileUrl.startsWith('/uploads/')) {
-    const filePath = path.join(process.cwd(), file.fileUrl);
+    const fileName = file.fileUrl.split('/').pop();
+    const filePath = path.join(os.tmpdir(), 'talkeasy-uploads', fileName);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
