@@ -507,58 +507,47 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
           {activeSidebarView === "tools" && (
             <div className="flex-1 flex flex-col px-3 h-full overflow-hidden">
-              <div className="px-2 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider">
-                AI Tools
+              <div className="flex items-center gap-2 px-2 pb-3 mt-1">
+                <Sparkles size={16} className="text-app-text" />
+                <h3 className="font-bold text-sm text-app-text">AI Tools</h3>
               </div>
-              <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar pb-4">
+              <div className="flex-1 overflow-y-auto space-y-2.5 custom-scrollbar pb-4">
                 {[
                   {
                     id: "translator",
                     name: "Translator",
                     desc: "Translate text accurately",
                     icon: Languages,
-                    bg: "bg-blue-500/10",
-                    color: "text-blue-500",
                   },
                   {
                     id: "meeting_notes",
                     name: "Meeting Notes",
                     desc: "Summarize meetings",
                     icon: NotebookPen,
-                    bg: "bg-amber-500/10",
-                    color: "text-amber-500",
                   },
                   {
                     id: "email_writer",
                     name: "Email Writer",
                     desc: "Professional emails",
                     icon: Mail,
-                    bg: "bg-pink-500/10",
-                    color: "text-pink-500",
                   },
                   {
                     id: "code_assistant",
                     name: "Code Assistant",
                     desc: "Expert software engineer",
                     icon: Code2,
-                    bg: "bg-violet-500/10",
-                    color: "text-violet-500",
                   },
                   {
                     id: "pdf_analyzer",
                     name: "PDF Analyzer",
                     desc: "Analyze PDF documents",
                     icon: FileSearch,
-                    bg: "bg-rose-500/10",
-                    color: "text-rose-500",
                   },
                   {
                     id: "document_summarizer",
                     name: "Doc Summarizer",
                     desc: "Summarize documents",
                     icon: FileText,
-                    bg: "bg-emerald-500/10",
-                    color: "text-emerald-500",
                   },
                 ].map((tool) => {
                   const Icon = tool.icon;
@@ -566,18 +555,18 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <div
                       key={tool.id}
                       onClick={() => handleToolClick(tool.id)}
-                      className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:border-brand-blue/30 cursor-pointer transition-all duration-300 flex items-start gap-3"
+                      className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:bg-surface-solid-hover cursor-pointer transition-all duration-300 flex items-start gap-3 group"
                     >
                       <div
-                        className={`w-8 h-8 rounded-lg ${tool.bg} flex items-center justify-center shrink-0 mt-0.5`}
+                        className="w-8 h-8 rounded-lg bg-app-bg border border-glass-border flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform"
                       >
-                        <Icon size={16} className={tool.color} />
+                        <Icon size={16} className="text-app-text" />
                       </div>
                       <div className="min-w-0">
-                        <div className="font-bold text-sm text-app-text mb-1">
+                        <div className="font-bold text-sm text-app-text mb-0.5">
                           {tool.name}
                         </div>
-                        <div className="text-xs text-app-text-secondary">
+                        <div className="text-xs font-medium text-app-text-secondary">
                           {tool.desc}
                         </div>
                       </div>

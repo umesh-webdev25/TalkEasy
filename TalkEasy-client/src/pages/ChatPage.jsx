@@ -4,7 +4,8 @@ import { useVoiceStream } from "../hooks/useVoiceStream";
 import {
   Send,
   Mic,
-  Paperclip,
+  AudioLines,
+  Plus,
   Globe,
   Volume2,
   Copy,
@@ -655,7 +656,7 @@ const ChatPage = () => {
                 onClick={() => setShowAttachMenu(!showAttachMenu)}
                 className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors cursor-pointer"
               >
-                <Paperclip size={18} />
+                <Plus size={22} />
               </button>
 
               {showAttachMenu && (
@@ -666,11 +667,11 @@ const ChatPage = () => {
                       imageInputRef.current?.click();
                       setShowAttachMenu(false);
                     }}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-brand-blue/10 hover:text-brand-blue transition-colors group cursor-pointer min-w-[70px]"
+                    className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-surface-solid-hover text-app-text transition-colors group cursor-pointer min-w-[70px]"
                   >
                     <Image
                       size={24}
-                      className="mb-2 text-app-text-muted group-hover:text-brand-blue transition-colors"
+                      className="mb-2 text-app-text-muted group-hover:text-app-text transition-colors"
                     />
                     <span className="text-[10px] font-bold">Image</span>
                   </button>
@@ -680,13 +681,27 @@ const ChatPage = () => {
                       docInputRef.current?.click();
                       setShowAttachMenu(false);
                     }}
-                    className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-brand-blue/10 hover:text-brand-blue transition-colors group cursor-pointer min-w-[70px]"
+                    className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-surface-solid-hover text-app-text transition-colors group cursor-pointer min-w-[70px]"
                   >
                     <FileText
                       size={24}
-                      className="mb-2 text-app-text-muted group-hover:text-brand-blue transition-colors"
+                      className="mb-2 text-app-text-muted group-hover:text-app-text transition-colors"
                     />
                     <span className="text-[10px] font-bold">Document</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInputValue("Generate Image ");
+                      setShowAttachMenu(false);
+                    }}
+                    className="flex flex-col items-center justify-center p-3 rounded-xl hover:bg-surface-solid-hover text-app-text transition-colors group cursor-pointer min-w-[70px]"
+                  >
+                    <Palette
+                      size={24}
+                      className="mb-2 text-app-text-muted group-hover:text-app-text transition-colors"
+                    />
+                    <span className="text-[10px] font-bold text-center leading-tight">Generate<br/>Image</span>
                   </button>
                 </div>
               )}
@@ -718,22 +733,23 @@ const ChatPage = () => {
             />
 
             {/* Right actions */}
-            <div className="flex items-center gap-2 pr-1">
-              <button
-                type="button"
-                onClick={handleMicClick}
-                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors shrink-0 cursor-pointer"
-              >
-                <Mic size={18} />
-              </button>
-
-              <button
-                type="submit"
-                disabled={!inputValue.trim() && stagedFiles.length === 0}
-                className="w-[44px] h-[44px] rounded-full bg-brand-blue disabled:bg-surface-solid-hover disabled:text-app-text-muted text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
-              >
-                <Send size={16} className="-ml-0.5" />
-              </button>
+            <div className="flex items-center pr-1.5">
+              {inputValue.trim() || stagedFiles.length > 0 ? (
+                <button
+                  type="submit"
+                  className="w-[44px] h-[44px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                >
+                  <Send size={18} className="-ml-0.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleMicClick}
+                  className="w-[44px] h-[44px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                >
+                  <AudioLines size={18} strokeWidth={2.5} />
+                </button>
+              )}
             </div>
           </form>
 
