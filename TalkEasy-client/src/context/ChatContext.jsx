@@ -45,7 +45,7 @@ export const ChatProvider = ({ children }) => {
       const data = await response.json();
       if (data.success && data.chat_histories) {
         const formatted = data.chat_histories.map(h => {
-          const chatTitle = h.toolType ? `${h.toolType} Chat` : 'Chat Session';
+          const chatTitle = h.title && h.title !== 'New Chat' && h.title !== 'Chat Session' ? h.title : (h.toolType ? `${h.toolType} Chat` : (h.title || 'New Chat'));
           return {
             id: h.session_id,
             title: chatTitle,
@@ -81,10 +81,47 @@ export const ChatProvider = ({ children }) => {
   }, [getHeaders]);
 
   useEffect(() => {
-    if (getToken()) {
+    let eventSource = null;
+    const token = getToken();
+
+    if (token) {
       loadChats();
       loadFiles();
+
+      // Set up SSE for real-time title updates
+      eventSource = new EventSource(`${API_BASE}/chat/events?token=${token}`);
+      
+      eventSource.addEventListener('title_updated', (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data && data.sessionId && data.title) {
+            setChats(prevChats => prevChats.map(c => 
+              c.id === data.sessionId ? { ...c, title: data.title } : c
+            ));
+            
+            // Note: we can't directly read activeChat state inside here reliably 
+            // without adding it to deps, so we use functional state update
+            setActiveChat(prev => prev && prev.id === data.sessionId ? {
+              ...prev,
+              title: data.title
+            } : prev);
+          }
+        } catch (err) {
+          console.error("SSE parse error", err);
+        }
+      });
+
+      eventSource.onerror = (error) => {
+        console.error('SSE Error:', error);
+        eventSource.close();
+      };
     }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
   }, [loadChats, loadFiles]);
 
   const loadHistory = useCallback(async (sessionId) => {
@@ -111,7 +148,7 @@ export const ChatProvider = ({ children }) => {
           }
 
           return {
-            ...(prev && prev.id === sessionId ? prev : { id: sessionId, title: 'Chat Session' }),
+            ...(prev && prev.id === sessionId ? prev : { id: sessionId, title: historyData.title || 'New Chat' }),
             id: sessionId,
             messages: formattedHistory
           };
@@ -132,7 +169,7 @@ export const ChatProvider = ({ children }) => {
 
   const createNewChat = (initialText = '', toolType = null) => {
     const newId = Date.now().toString(); // Use a timestamp or UUID for new session
-    const chatTitle = toolType ? `${toolType} Chat` : 'New Conversation';
+    const chatTitle = toolType ? `${toolType} Chat` : 'New Chat';
     const newChat = {
       id: newId,
       title: chatTitle,
@@ -218,7 +255,7 @@ export const ChatProvider = ({ children }) => {
       messages: [...(prev.messages || []), userMsg]
     } : {
       id: sessionId,
-      title: 'Chat Session',
+      title: currentChat ? currentChat.title : 'New Chat',
       messages: [userMsg]
     });
     

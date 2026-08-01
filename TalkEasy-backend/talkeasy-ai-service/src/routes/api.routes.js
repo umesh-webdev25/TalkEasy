@@ -9,7 +9,8 @@ import {
   getAllChatHistories,
   clearSessionHistory,
   searchChatMessages,
-  toggleStar
+  toggleStar,
+  subscribeToChatEvents
 } from '../controllers/chat.controller.js';
 
 import {
@@ -31,6 +32,7 @@ import {
 const router = express.Router();
 
 // --- Chat Routes ---
+router.get('/chat/events', requireAuth, subscribeToChatEvents);
 router.post('/chat/text/:session_id', requireAuth, chatWithAgentText);
 router.post('/chat/voice/:session_id', requireAuth, upload.single('audio'), logUploadDebug, chatWithAgent);
 router.get('/chat/history', requireAuth, getAllChatHistories);

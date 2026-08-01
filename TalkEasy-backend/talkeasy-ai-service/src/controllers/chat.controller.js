@@ -5,6 +5,8 @@ import { logger, AppError, asyncHandler, sendSuccess } from 'shared';
 import { llmService } from '../services/gemini.service.js';
 import { sttService } from '../services/groqWhisper.service.js';
 import { ttsService } from '../services/elevenLabs.service.js';
+import { eventBus } from '../services/eventBus.service.js';
+import { titleGeneratorService } from '../services/titleGenerator.service.js';
 import fs from 'fs';
 
 const toolPrompts = {
@@ -192,18 +194,9 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
 
   await addMessage(session_id, 'assistant', responseText, userId);
 
-  // Generate dynamic title if this is the first message
+  // Generate dynamic title in the background if this is the first message
   if (!session || session.message_count === 1) {
-    try {
-      const titlePrompt = `Generate a short, concise 3-5 word title for a chat session that starts with this message. Output ONLY the title, no quotes or prefixes. Message: "${text}"`;
-      const generatedTitle = await llmService.generateResponse(titlePrompt, [], "en", "You are a title generator. Respond only with the title.");
-      if (generatedTitle) {
-        const cleanTitle = generatedTitle.replace(/^"|"$/g, '').trim();
-        await chatRepository.updateSession(session_id, { title: cleanTitle });
-      }
-    } catch (titleErr) {
-      logger.warn(`⚠️ Failed to generate dynamic title for session ${session_id}: ${titleErr.message}`);
-    }
+    titleGeneratorService.generateTitleAsync(session_id, userId, text).catch(e => logger.error(`Title generation background task error: ${e.message}`));
   }
 
   return res.json({ success: true, message: "Chat processed successfully", llm_response: responseText, session_id });
@@ -271,18 +264,9 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
       logger.error(`❌ ElevenLabs TTS error: ${err.message}`);
     }
 
-    // Generate dynamic title if this is the first message
+    // Generate dynamic title in the background if this is the first message
     if (!session || session.message_count === 1) {
-      try {
-        const titlePrompt = `Generate a short, concise 3-5 word title for a chat session that starts with this message. Output ONLY the title, no quotes or prefixes. Message: "${transcribedText}"`;
-        const generatedTitle = await llmService.generateResponse(titlePrompt, [], "en", "You are a title generator. Respond only with the title.");
-        if (generatedTitle) {
-          const cleanTitle = generatedTitle.replace(/^"|"$/g, '').trim();
-          await chatRepository.updateSession(session_id, { title: cleanTitle });
-        }
-      } catch (titleErr) {
-        logger.warn(`⚠️ Failed to generate dynamic title for voice session ${session_id}: ${titleErr.message}`);
-      }
+      titleGeneratorService.generateTitleAsync(session_id, userId, transcribedText).catch(e => logger.error(`Title generation background task error: ${e.message}`));
     }
 
     return res.json({
@@ -303,4 +287,28 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
       }
     }
   }
+});
+
+export const subscribeToChatEvents = asyncHandler(async (req, res) => {
+  const userId = req.user ? req.user.user_id : null;
+  if (!userId) {
+    throw new AppError("Unauthorized", 401);
+  }
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const handleTitleUpdate = (data) => {
+    if (data.userId === userId) {
+      res.write(`event: title_updated\ndata: ${JSON.stringify(data)}\n\n`);
+    }
+  };
+
+  eventBus.on('chat_title_updated', handleTitleUpdate);
+
+  req.on('close', () => {
+    eventBus.off('chat_title_updated', handleTitleUpdate);
+  });
 });
