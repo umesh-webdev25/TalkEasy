@@ -7,7 +7,10 @@ import { sttService } from '../services/groqWhisper.service.js';
 import { ttsService } from '../services/elevenLabs.service.js';
 import { eventBus } from '../services/eventBus.service.js';
 import { titleGeneratorService } from '../services/titleGenerator.service.js';
+import { imageGenerationService } from '../services/vision/imageGeneration.service.js';
 import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 const toolPrompts = {
   "translator": "You are an expert polyglot linguist and professional translation engineer. Accurately translate the input text to the target language requested by the user while preserving idiomatic nuance, grammar, tone, and formatting. If no target language is explicitly specified, detect the source language and provide clear translations into major global languages (English, Spanish, French, Hindi). Never leave translations empty.",
@@ -184,7 +187,18 @@ export const chatWithAgentText = asyncHandler(async (req, res) => {
 
   let responseText;
   try {
-    responseText = await llmService.generateResponse(finalQuery, chatHistory, "auto", systemPromptOverride, sessionFiles);
+    const isImageRequest = currentToolType === 'image_generator' || /^generate\s+(an?\s+)?images?\b/i.test(text.trim());
+
+    fs.appendFileSync(path.join(os.tmpdir(), 'debug-img.txt'), `\n[${new Date().toISOString()}] Text: "${text}" | toolType: "${toolType}" | currentToolType: "${currentToolType}" | isImageReq: ${isImageRequest}\n`);
+
+    if (isImageRequest) {
+      logger.info(`Generating image for session ${session_id}`);
+      const imagePrompt = text.replace(/^generate\s+(an?\s+)?images?\b\s*(of\s+)?/i, '').trim() || text;
+      const { imageUrl } = await imageGenerationService.generate(imagePrompt);
+      responseText = `Here is your generated image for "${imagePrompt}":\n\n![Generated Image](${imageUrl})`;
+    } else {
+      responseText = await llmService.generateResponse(finalQuery, chatHistory, "auto", systemPromptOverride, sessionFiles);
+    }
   } catch (err) {
     logger.error(`❌ LLM text generation failed in chat controller: ${err.message}`);
     responseText = `Error: ${err.message || "I encountered technical difficulties processing your request. Please try again later."}`;
@@ -245,7 +259,16 @@ export const chatWithAgent = asyncHandler(async (req, res) => {
 
     let responseText;
     try {
+    const isImageRequest = /^generate\s+(an?\s+)?images?\b/i.test(transcribedText.trim());
+
+    if (isImageRequest) {
+      logger.info(`Generating image via voice for session ${session_id}`);
+      const imagePrompt = transcribedText.replace(/^generate\s+(an?\s+)?images?\b\s*(of\s+)?/i, '').trim() || transcribedText;
+      const { imageUrl } = await imageGenerationService.generate(imagePrompt);
+      responseText = `Here is your generated image for "${imagePrompt}":\n\n![Generated Image](${imageUrl})`;
+    } else {
       responseText = await llmService.generateResponse(finalQuery, chatHistory, "auto", systemPromptOverride, sessionFiles);
+    }
     } catch (err) {
       logger.error(`❌ LLM voice generation failed in chat controller: ${err.message}`);
       responseText = `I encountered an error generating a response: ${err.message}`;

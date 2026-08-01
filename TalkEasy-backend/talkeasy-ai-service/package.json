@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
+    "@huggingface/inference": "^4.13.24",
     "cloudinary": "^2.10.0",
     "compression": "^1.8.1",
     "cors": "^2.8.6",
