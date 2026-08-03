@@ -29,6 +29,7 @@ import {
   BookOpen,
   Map,
   ArrowRight,
+  Download,
 } from "lucide-react";
 import Button from "../components/ui/Button";
 import TypingIndicator from "../components/ui/TypingIndicator";
@@ -163,6 +164,31 @@ const ChatPage = () => {
     navigator.clipboard.writeText(text);
     setCopiedId(messageId);
     setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const handleDownloadImage = async (url) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = `generated-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(objectUrl);
+    } catch (error) {
+      console.error("Error downloading image:", error);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `generated-image-${Date.now()}.png`;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
   };
 
   const handleSpeak = (text, messageId) => {
@@ -378,11 +404,23 @@ const ChatPage = () => {
                           )}
                           {generatedImages.length > 0 && (
                             <div className="flex flex-col gap-2 mb-3 mt-1">
-                              {generatedImages.map((url, idx) => (
-                                <div key={`gen-img-${idx}`} className="rounded-xl overflow-hidden border border-glass-border max-w-sm">
-                                  <img src={getMediaUrl(url)} alt="Generated" className="w-full h-auto object-contain bg-black/20" />
-                                </div>
-                              ))}
+                              {generatedImages.map((url, idx) => {
+                                const fullUrl = getMediaUrl(url);
+                                return (
+                                  <div key={`gen-img-${idx}`} className="relative rounded-xl overflow-hidden border border-glass-border max-w-sm group">
+                                    <img src={fullUrl} alt="Generated" className="w-full h-auto object-contain bg-black/20" />
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                      <button 
+                                        onClick={() => handleDownloadImage(fullUrl)}
+                                        className="flex items-center justify-center p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-sm transition-colors cursor-pointer"
+                                        title="Download Image"
+                                      >
+                                        <Download size={16} />
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                           {displayText && (
@@ -395,7 +433,7 @@ const ChatPage = () => {
                     <div
                       className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-glass-border text-[10px] text-app-text-muted font-medium ${isUser ? "justify-end" : "justify-between"}`}
                     >
-                      <span>{message.time}</span>
+                      {/* <span>{message.time}</span> */}
 
                       {!isUser && (
                         <div className="flex items-center gap-3">
