@@ -43,7 +43,16 @@ const GlobalSearchModal = ({ isOpen, onClose }) => {
         const sessionId = searchScope === "current" ? activeChatId : null;
         const data = await searchChatMessages(query, sessionId);
         if (data.success) {
-          setResults(data.results || []);
+          const mappedResults = (data.results || []).map(msg => ({
+            session_id: msg.sessionId?.session_id || msg.sessionId,
+            created_at: msg.createdAt,
+            message: {
+              sender: msg.role,
+              content: msg.content,
+              time: new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          }));
+          setResults(mappedResults);
         } else {
           setError(data.error || "Failed to search messages");
           setResults([]);
