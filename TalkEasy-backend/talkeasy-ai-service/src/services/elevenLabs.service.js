@@ -35,7 +35,7 @@ class TTSService {
       
       const audioStream = await this.client.textToSpeech.convert(this.voiceId, {
         text: truncatedText,
-        model_id: 'eleven_monolingual_v1',
+        model_id: 'eleven_turbo_v2_5',
         output_format: format,
       });
 

@@ -131,7 +131,27 @@ export const setupSockets = (httpServer) => {
     try {
       socket.emit('message', { type: 'llm_streaming_start', message: 'Transcribing audio...' });
       
-      const transcribedText = await sttService.transcribeAudio(audioBuffer);
+      // Ensure audioBuffer has a WAV header before STT, otherwise Whisper fails on raw PCM
+      const generateWavHeader = (dataLength, sampleRate = 16000, numChannels = 1, bitsPerSample = 16) => {
+        const header = Buffer.alloc(44);
+        header.write('RIFF', 0);
+        header.writeUInt32LE(dataLength + 36, 4);
+        header.write('WAVE', 8);
+        header.write('fmt ', 12);
+        header.writeUInt32LE(16, 16);
+        header.writeUInt16LE(1, 20);
+        header.writeUInt16LE(numChannels, 22);
+        header.writeUInt32LE(sampleRate, 24);
+        header.writeUInt32LE(sampleRate * numChannels * (bitsPerSample / 8), 28);
+        header.writeUInt16LE(numChannels * (bitsPerSample / 8), 32);
+        header.writeUInt16LE(bitsPerSample, 34);
+        header.write('data', 36);
+        header.writeUInt32LE(dataLength, 40);
+        return header;
+      };
+      
+      const wavBuffer = Buffer.concat([generateWavHeader(audioBuffer.length), audioBuffer]);
+      const transcribedText = await sttService.transcribeAudio(wavBuffer);
       if (!transcribedText) {
          socket.emit('message', { type: 'llm_streaming_error', message: 'No speech detected.' });
          return;
@@ -142,7 +162,7 @@ export const setupSockets = (httpServer) => {
         session = await chatRepository.createSession({ session_id, user_id: userId });
       }
 
-      // Security check (if userId is provided)
+      // Security check
       if (session.user_id && userId && session.user_id !== userId) {
         socket.emit('message', { type: 'llm_streaming_error', message: 'Unauthorized session access.' });
         return;
@@ -162,14 +182,62 @@ export const setupSockets = (httpServer) => {
       await chatRepository.saveSession(session);
 
       socket.emit('message', { type: 'llm_streaming_start', message: 'LLM is generating response...', user_message: transcribedText });
+      socket.emit('message', { type: 'tts_streaming_start', message: 'Starting voice synthesis...' });
 
       const llmStream = llmService.generateStreamingResponse(transcribedText, chatHistory, null, lang);
       let accumulatedResponse = '';
+      let currentSentenceBuffer = '';
+      let ttsQueue = Promise.resolve();
+
+      const queueTTS = (textChunk) => {
+        ttsQueue = ttsQueue.then(async () => {
+          try {
+            const audioStream = await ttsService.client.textToSpeech.convert(ttsService.voiceId, {
+              text: textChunk,
+              model_id: 'eleven_turbo_v2_5', // Low latency streaming model
+              output_format: 'mp3_44100_128',
+            });
+            const chunks = [];
+            for await (const chunk of audioStream) {
+              chunks.push(chunk);
+            }
+            // Send entire sentence MP3 as a single chunk so decodeAudioData on frontend succeeds
+            const audioBase64 = Buffer.concat(chunks).toString('base64');
+            socket.emit('message', {
+              type: 'tts_audio_chunk',
+              audio_base64,
+              is_final: false
+            });
+          } catch (error) {
+            logger.warn(`TTS generation failed for chunk: ${error.message}`);
+            socket.emit('message', { type: 'error', message: `TTS failed: ${error.message}` });
+          }
+        });
+      };
 
       for await (const chunk of llmStream) {
         accumulatedResponse += chunk;
+        currentSentenceBuffer += chunk;
         socket.emit('message', { type: 'llm_streaming_chunk', chunk, accumulated_length: accumulatedResponse.length });
+
+        // Split by sentence boundaries: ., !, ?, followed by space or newline
+        let match;
+        while ((match = currentSentenceBuffer.match(/([.?!]+)(\s+|$)/)) && match.index !== undefined) {
+           const sentenceEndIdx = match.index + match[0].length;
+           const sentence = currentSentenceBuffer.substring(0, sentenceEndIdx).trim();
+           currentSentenceBuffer = currentSentenceBuffer.substring(sentenceEndIdx);
+           
+           if (sentence.length > 0) {
+             queueTTS(sentence);
+           }
+        }
       }
+
+      if (currentSentenceBuffer.trim().length > 0) {
+        queueTTS(currentSentenceBuffer.trim());
+      }
+
+      await ttsQueue;
 
       await messageRepository.createMessage({
         sessionId: session._id,
@@ -181,25 +249,6 @@ export const setupSockets = (httpServer) => {
       session.last_activity = new Date();
       session.last_updated = new Date();
       await chatRepository.saveSession(session);
-
-      socket.emit('message', { type: 'tts_streaming_start', message: 'Generating speech...' });
-
-      const audioStream = await ttsService.client.textToSpeech.convert(ttsService.voiceId, {
-        text: ttsService.truncateText(accumulatedResponse),
-        model_id: 'eleven_monolingual_v1',
-        output_format: 'mp3_44100_128',
-      });
-      
-      let chunkNumber = 0;
-      for await (const chunk of audioStream) {
-        chunkNumber++;
-        socket.emit('message', {
-          type: 'tts_audio_chunk',
-          audio_base64: chunk.toString('base64'),
-          chunk_number: chunkNumber,
-          is_final: false
-        });
-      }
 
       socket.emit('message', { type: 'tts_audio_chunk', is_final: true });
       socket.emit('message', { type: 'llm_streaming_complete', complete_response: accumulatedResponse });

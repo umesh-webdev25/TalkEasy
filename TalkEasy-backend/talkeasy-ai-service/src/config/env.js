@@ -11,6 +11,7 @@ const envSchema = z.object({
   GEMINI_API_KEY: z.string().optional(),
   GROQ_API_KEY: z.string().optional(),
   ELEVENLABS_API_KEY: z.string().optional(),
+  ELEVENLABS_VOICE_ID: z.string().default("21m00Tcm4TlvDq8ikWAM"),
   SERPER_API_KEY: z.string().optional(),
   JWT_SECRET: z.string(),
   LOG_LEVEL: z.string().default("info"),
