@@ -178,19 +178,19 @@ const PdfPreviewCard = ({
       onClick={() => onClick && onClick(file)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      className={`group relative flex items-center justify-between gap-2.5 px-3 py-2 rounded-[14px] bg-[#1a1c23]/95 hover:bg-[#20232c] dark:bg-[#16181d]/95 dark:hover:bg-[#1c1f26] border border-white/[0.08] hover:border-white/[0.15] shadow-md min-w-[180px] max-w-[260px] w-full transition-all duration-200 select-none ${onClick ? 'cursor-pointer' : ''} ${className}`}
+      className={`group relative flex items-center justify-between gap-2.5 px-3 py-2 rounded-[14px] bg-surface-solid hover:bg-surface-solid-hover border border-glass-border shadow-md min-w-[180px] max-w-[260px] w-full transition-all duration-200 select-none ${onClick ? 'cursor-pointer' : ''} ${className}`}
     >
       {/* Floating Large Page 1 Tooltip Preview on Hover */}
       {thumbnail && isHovered && (
-        <div className="absolute left-0 bottom-full mb-2 z-50 p-1.5 rounded-2xl bg-[#121419] border border-white/15 shadow-2xl w-40 h-52 flex flex-col items-center pointer-events-none transition-all duration-200">
-          <div className="w-full flex-1 rounded-xl overflow-hidden bg-white border border-slate-700 shadow-inner flex items-center justify-center">
+        <div className="absolute left-0 bottom-full mb-2 z-50 p-1.5 rounded-2xl bg-surface-solid border border-glass-border shadow-2xl w-40 h-52 flex flex-col items-center pointer-events-none transition-all duration-200">
+          <div className="w-full flex-1 rounded-xl overflow-hidden bg-white border border-glass-border shadow-inner flex items-center justify-center">
             <img
               src={thumbnail}
               alt="Preview"
               className="w-full h-full object-contain bg-white"
             />
           </div>
-          <span className="text-[9px] font-extrabold text-slate-300 mt-1 tracking-wider uppercase">
+          <span className="text-[9px] font-extrabold text-app-text-secondary mt-1 tracking-wider uppercase">
             {fileName.toLowerCase().endsWith('.pdf') ? 'Page 1 Preview' : 'Image Preview'}
           </span>
         </div>
@@ -199,7 +199,7 @@ const PdfPreviewCard = ({
       <div className="flex items-center gap-2.5 min-w-0 flex-1">
         {/* Compact Solid Folded-Corner Badge based on file type or Image Thumbnail */}
         {thumbnail && ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(fileName.split('.').pop().toLowerCase()) ? (
-          <div className="relative w-[32px] h-[38px] rounded-[9px] overflow-hidden shrink-0 shadow-md border border-white/10 group-hover:scale-[1.03] transition-transform duration-200 bg-white">
+          <div className="relative w-[32px] h-[38px] rounded-[9px] overflow-hidden shrink-0 shadow-md border border-glass-border group-hover:scale-[1.03] transition-transform duration-200 bg-white">
             <img src={thumbnail} alt={fileName} className="w-full h-full object-cover" />
           </div>
         ) : (
@@ -220,25 +220,25 @@ const PdfPreviewCard = ({
         {/* File Name & Size Details */}
         <div className="flex flex-col min-w-0 flex-1 justify-center">
           <span
-            className="text-xs font-bold text-slate-100 truncate tracking-tight leading-snug group-hover:text-white transition-colors"
+            className="text-xs font-bold text-app-text truncate tracking-tight leading-snug transition-colors"
             title={fileName}
           >
             {fileName}
           </span>
-          <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-400 mt-0.5">
+          <div className="flex items-center gap-1.5 text-[10px] font-medium text-app-text-muted mt-0.5">
             <span>{fileSizeStr}</span>
             {pageCount && (
               <>
-                <span className="text-slate-600 font-bold">•</span>
-                <span className="text-slate-300 font-semibold">
+                <span className="text-app-text-muted font-bold">•</span>
+                <span className="text-app-text-secondary font-semibold">
                   {pageCount} {pageCount === 1 ? 'page' : 'pages'}
                 </span>
               </>
             )}
             {loading && (
               <>
-                <span className="text-slate-600 font-bold">•</span>
-                <span className="text-slate-400 italic text-[9px] animate-pulse">reading...</span>
+                <span className="text-app-text-muted font-bold">•</span>
+                <span className="text-app-text-muted italic text-[9px] animate-pulse">reading...</span>
               </>
             )}
           </div>
@@ -253,7 +253,7 @@ const PdfPreviewCard = ({
             e.stopPropagation();
             onRemove(file?.fileId || file?.fileName || file?.name);
           }}
-          className="p-1 text-slate-400 hover:text-white hover:bg-white/[0.08] active:scale-95 rounded-full transition-all cursor-pointer shrink-0 ml-0.5"
+          className="p-1 text-app-text-muted hover:text-app-text hover:bg-glass-bg active:scale-95 rounded-full transition-all cursor-pointer shrink-0 ml-0.5"
           title="Remove file"
         >
           <X size={15} strokeWidth={2.2} />
