@@ -8,6 +8,19 @@ export const connectDB = async () => {
     return false;
   }
   
+  // Set up connection lifecycle listeners
+  mongoose.connection.on('connected', () => {
+    logger.info('✅ Mongoose connected to MongoDB');
+  });
+
+  mongoose.connection.on('error', (err) => {
+    logger.error(`❌ Mongoose connection error: ${err.message}`);
+  });
+
+  mongoose.connection.on('disconnected', () => {
+    logger.info('⚠️ Mongoose disconnected from MongoDB');
+  });
+
   try {
     const options = {
       dbName: env.MONGODB_DB_NAME,
@@ -18,11 +31,12 @@ export const connectDB = async () => {
     };
     
     await mongoose.connect(env.MONGODB_URL, options);
-    logger.info('✅ Auth Database service connected successfully');
     return true;
   } catch (error) {
     logger.error(`❌ Auth Database service initialization error: ${error.message}`);
-    return false;
+    // Throw the error instead of returning false so that server.js catches it 
+    // and doesn't start the app without a database!
+    throw error;
   }
 };
 
