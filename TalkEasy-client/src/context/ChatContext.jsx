@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getToken } from '../utils/auth';
+import { getToken, removeToken } from '../utils/auth';
 import { API_BASE } from '../config/config';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './ToastContext';
@@ -31,6 +31,15 @@ export const ChatProvider = ({ children }) => {
   const [files, setFiles] = useState([]);
   const navigate = useNavigate();
 
+  const handleAuthError = useCallback(() => {
+    removeToken();
+    setChats([]);
+    setActiveChat(null);
+    setActiveChatId(null);
+    setFiles([]);
+    navigate('/login');
+  }, [navigate]);
+
   const getHeaders = useCallback(() => {
     const token = getToken();
     return {
@@ -44,6 +53,10 @@ export const ChatProvider = ({ children }) => {
     setLoadingChats(true);
     try {
       const response = await fetch(`${API_BASE}/chat/history`, { headers: getHeaders() });
+      if (response.status === 401) {
+        handleAuthError();
+        return;
+      }
       const data = await response.json();
       if (data.success && data.chat_histories) {
         const formatted = data.chat_histories.map(h => {
@@ -73,6 +86,10 @@ export const ChatProvider = ({ children }) => {
     if (!getToken()) return;
     try {
       const response = await fetch(`${API_BASE}/files`, { headers: getHeaders() });
+      if (response.status === 401) {
+        handleAuthError();
+        return;
+      }
       const data = await response.json();
       if (data.success) {
         setFiles(data.files || []);
@@ -130,6 +147,10 @@ export const ChatProvider = ({ children }) => {
     if (!sessionId || !getToken()) return;
     try {
       const response = await fetch(`${API_BASE}/chat/history/${sessionId}`, { headers: getHeaders() });
+      if (response.status === 401) {
+        handleAuthError();
+        return;
+      }
       const data = await response.json();
       if (data.success || Array.isArray(data)) {
         const historyData = Array.isArray(data) ? data : (data.messages || []);

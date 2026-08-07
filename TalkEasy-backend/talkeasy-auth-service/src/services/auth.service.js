@@ -39,7 +39,7 @@ class AuthService {
   }
 
   createAccessToken(payload) {
-    return generateToken(payload, process.env.JWT_SECRET, '15m');
+    return generateToken(payload, process.env.JWT_SECRET, process.env.JWT_EXPIRES || '7d');
   }
 
   createRefreshToken(payload) {

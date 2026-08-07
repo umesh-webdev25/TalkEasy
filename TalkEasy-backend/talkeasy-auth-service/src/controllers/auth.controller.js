@@ -99,6 +99,7 @@ export const googleCallback = asyncHandler(async (req, res) => {
       <body>
         <script>
           try {
+            localStorage.setItem('token', ${JSON.stringify(accessToken)});
             localStorage.setItem('access_token', ${JSON.stringify(accessToken)});
             localStorage.setItem('refresh_token', ${JSON.stringify(refreshToken)});
             localStorage.setItem('user', JSON.stringify(${JSON.stringify(userObj)}));

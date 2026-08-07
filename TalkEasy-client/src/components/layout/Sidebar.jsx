@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { removeToken } from "../../utils/auth";
 import {
   MessageSquare,
   History,
@@ -74,6 +75,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   }, []);
 
   const handleLogout = () => {
+    removeToken();
     navigate("/login");
   };
 
