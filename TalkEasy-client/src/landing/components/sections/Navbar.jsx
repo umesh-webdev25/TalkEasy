@@ -50,9 +50,11 @@ export default function Navbar() {
       <nav className="mx-auto max-w-[1400px] px-5 sm:px-8 h-[72px] flex items-center justify-between" aria-label="Main navigation">
         {/* Logo */}
         <a href="#hero" className="flex items-center gap-2.5 shrink-0" aria-label="TalkEasy home">
-          <span className="w-9 h-9 rounded-[10px] bg-[var(--text-primary)] text-[var(--bg-app)] flex items-center justify-center text-sm font-bold">
-            T
-          </span>
+          <img
+            src="/talkeasy.svg"
+            alt="TalkEasy Logo"
+            className="w-8 h-8 object-contain dark:invert"
+          />
           <span className="text-[17px] font-bold tracking-tight text-app-text">
             TalkEasy
           </span>
