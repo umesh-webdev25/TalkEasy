@@ -1,33 +1,11 @@
 import { Suspense, lazy, useRef } from 'react';
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from 'framer-motion';
-import { Mic, FileText, Languages, Sparkles, ArrowRight, Play, ShieldCheck } from 'lucide-react';
+import { Sparkles, ArrowRight, Play, ShieldCheck } from 'lucide-react';
 import { CTAButton, CTAButtonLink } from '../ui/Buttons';
 import Magnetic from '../ui/Magnetic';
 import { ChatScreen } from '../mockups/Screens';
 
 const AntigravityBackground = lazy(() => import('../animations/AntigravityBackground'));
-
-const FLOAT_CARDS = [
-  { icon: Mic, label: 'Natural Voice', className: 'top-16 -left-4 lg:-left-10', delay: 0 },
-  { icon: FileText, label: 'PDF Reader', className: 'top-40 -right-2 lg:-right-10', delay: 1.2 },
-  { icon: Sparkles, label: 'Image AI', className: '-bottom-6 left-4 lg:-left-4', delay: 0.6 },
-  { icon: Languages, label: 'Translation', className: '-bottom-8 right-2 lg:-right-6', delay: 1.8 },
-];
-
-function FloatCard({ icon: Icon, label, className, delay }) {
-  return (
-    <motion.div
-      className={`absolute z-20 hidden md:flex items-center gap-2.5 rounded-2xl border border-[var(--glass-border)] bg-[var(--glass-bg)]/85 backdrop-blur-md px-4 py-3 shadow-[0_18px_45px_-15px_rgba(0,0,0,0.25)] ${className}`}
-      animate={{ y: [0, -10, 0] }}
-      transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay }}
-    >
-      <span className="w-8 h-8 rounded-lg bg-[var(--text-primary)]/5 border border-[var(--glass-border)] flex items-center justify-center text-app-text">
-        <Icon size={15} aria-hidden />
-      </span>
-      <span className="text-[11.5px] font-semibold text-app-text whitespace-nowrap">{label}</span>
-    </motion.div>
-  );
-}
 
 export default function Hero() {
   const sectionRef = useRef(null);
@@ -41,7 +19,6 @@ export default function Hero() {
   const mockRotY = useTransform(sx, [-1, 1], [-5, 5]);
   const mockRotX = useTransform(sy, [-1, 1], [4, -4]);
   const cardX = useTransform(sx, [-1, 1], [-16, 16]);
-  const cardY = useTransform(sy, [-1, 1], [-10, 10]);
 
   const onMouseMove = (e) => {
     if (reduce) return;
@@ -157,12 +134,6 @@ export default function Hero() {
           <div className="block">
             <ChatScreen className="h-[380px] sm:h-[460px] lg:h-[480px]" />
           </div>
-        </motion.div>
-
-        <motion.div style={{ x: cardX, y: cardY }} className="pointer-events-none" aria-hidden>
-          {FLOAT_CARDS.map((card) => (
-            <FloatCard key={card.label} {...card} />
-          ))}
         </motion.div>
       </motion.div>
 
