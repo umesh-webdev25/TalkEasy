@@ -38,7 +38,7 @@ const LoginPage = () => {
       console.log('Storing user info in localStorage:', userInfo);
       localStorage.setItem('user', JSON.stringify(userInfo));
 
-      navigate("/");
+      navigate("/app");
     } catch (err) {
       setError(
         err.response?.data?.detail ||
