@@ -1,11 +1,32 @@
 import { ElevenLabsClient } from 'elevenlabs';
 import { env } from '../config/env.js';
 import { logger } from 'shared';
+import { createCircuitBreaker } from '../utils/circuitBreaker.js';
 
 class TTSService {
   constructor() {
     this.client = new ElevenLabsClient({ apiKey: env.ELEVENLABS_API_KEY });
     this.voiceId = env.ELEVENLABS_VOICE_ID;
+    
+    this.generateSpeechBreaker = createCircuitBreaker(
+      async (text, format) => {
+        const audioStream = await this.client.textToSpeech.convert(this.voiceId, {
+          text,
+          model_id: 'eleven_turbo_v2_5',
+          output_format: format,
+        });
+
+        const chunks = [];
+        for await (const chunk of audioStream) {
+          chunks.push(chunk);
+        }
+        return Buffer.concat(chunks);
+      },
+      { timeout: 15000 },
+      () => {
+        return null; // Fallback returns null to gracefully bypass audio if down
+      }
+    );
   }
 
   truncateText(text, maxChars = 3000) {
@@ -33,19 +54,15 @@ class TTSService {
     try {
       const truncatedText = this.truncateText(text);
       
-      const audioStream = await this.client.textToSpeech.convert(this.voiceId, {
-        text: truncatedText,
-        model_id: 'eleven_turbo_v2_5',
-        output_format: format,
-      });
+      const audioBuffer = await this.generateSpeechBreaker.fire(truncatedText, format);
 
-      logger.info('TTS audio generated successfully');
-      
-      const chunks = [];
-      for await (const chunk of audioStream) {
-        chunks.push(chunk);
+      if (audioBuffer) {
+        logger.info('TTS audio generated successfully');
+      } else {
+        logger.warn('TTS bypassed due to circuit breaker fallback');
       }
-      return Buffer.concat(chunks);
+      
+      return audioBuffer;
     } catch (error) {
       logger.error(`TTS generation error: ${error.message}`);
       throw error;

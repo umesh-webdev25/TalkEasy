@@ -2,10 +2,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { getToken } from '../utils/auth';
 import { API_BASE } from '../config/config';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from './ToastContext';
 
 const ChatContext = createContext();
 
 export const ChatProvider = ({ children }) => {
+  const { showToast } = useToast();
   const [chats, setChats] = useState([]);
   const [activeChatId, setActiveChatId] = useState(null);
   const [activeChat, setActiveChat] = useState(null);
@@ -188,39 +190,61 @@ export const ChatProvider = ({ children }) => {
   };
 
   const deleteChat = async (id) => {
+    // 1. Snapshot previous state
+    const prevChats = [...chats];
+    const prevActiveId = activeChatId;
+
+    // 2. Optimistic UI update
+    setChats(prev => prev.filter(c => c.id !== id));
+    if (activeChatId === id) {
+      const remaining = chats.filter(c => c.id !== id);
+      if (remaining.length > 0) {
+        setActiveChatId(remaining[0].id);
+      } else {
+        setActiveChatId(null);
+      }
+    }
+
     try {
+      // 3. Server Request
       const response = await fetch(`${API_BASE}/chat/history/${id}`, {
         method: 'DELETE',
         headers: getHeaders()
       });
-      if (response.ok) {
-        setChats(prev => prev.filter(c => c.id !== id));
-        if (activeChatId === id) {
-          const remaining = chats.filter(c => c.id !== id);
-          if (remaining.length > 0) {
-            setActiveChatId(remaining[0].id);
-          } else {
-            setActiveChatId(null);
-          }
-        }
+      if (!response.ok) {
+        throw new Error("Failed to delete chat");
       }
     } catch (err) {
+      // 4. Graceful Rollback & Toast Notification
       console.error("Error deleting chat", err);
+      setChats(prevChats);
+      setActiveChatId(prevActiveId);
+      showToast("Failed to delete chat. Restoring state...", "error");
     }
   };
 
   const toggleStarChat = async (id, isStarred) => {
+    // 1. Snapshot previous state
+    const prevChats = [...chats];
+
+    // 2. Optimistic UI update
+    setChats(prev => prev.map(c => c.id === id ? { ...c, isStarred } : c));
+
     try {
+      // 3. Server Request
       const response = await fetch(`${API_BASE}/chat/star/${id}`, {
         method: 'PUT',
         headers: getHeaders(),
         body: JSON.stringify({ isStarred })
       });
-      if (response.ok) {
-        setChats(prev => prev.map(c => c.id === id ? { ...c, isStarred } : c));
+      if (!response.ok) {
+        throw new Error("Failed to toggle star");
       }
     } catch (err) {
+      // 4. Graceful Rollback & Toast Notification
       console.error("Error toggling star", err);
+      setChats(prevChats);
+      showToast("Failed to star chat. Restoring state...", "error");
     }
   };
 
@@ -353,12 +377,13 @@ export const ChatProvider = ({ children }) => {
       });
       const data = await response.json();
       if (!data.success) {
-        setFiles(prevFiles);
+        throw new Error("Failed to delete file on server");
       }
       return data;
     } catch (err) {
       console.error("Delete error", err);
       setFiles(prevFiles);
+      showToast("Failed to delete file. Restoring state...", "error");
       return { success: false };
     }
   };

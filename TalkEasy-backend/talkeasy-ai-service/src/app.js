@@ -18,7 +18,20 @@ const app = express();
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-app.use(compression());
+app.use(compression({
+  threshold: 1024, // 1KB threshold
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false; // Don't compress responses with this header
+    }
+    // Avoid double-compressing already-compressed payloads
+    if (res.getHeader('Content-Encoding')) {
+      return false;
+    }
+    // Fallback to standard compression filter (checks for compressible text/json content types)
+    return compression.filter(req, res);
+  }
+}));
 app.use(cors({
   origin: env.FRONTEND_URL || '*',
   credentials: true

@@ -26,12 +26,14 @@ export const searchWebEndpoint = async (req, res) => {
       return res.json({ success: false, query, results: [], error_message: "Web search service is not available. Please check Tavily API key." });
     }
 
-    const searchResults = await customWebSearchService.searchWeb(query, 3);
+    const locale = req.headers['accept-language']?.split(',')[0] || req.query?.locale || 'en';
+    const searchResults = await customWebSearchService.searchWeb(query, 3, locale);
     const results = searchResults.map(r => ({ title: r.title, snippet: r.content || r.snippet, url: r.url }));
     
-    return res.json({ success: true, query, results });
+    return res.json({ success: true, query, locale, results });
   } catch (error) {
     logger.error(`Web search error: ${error.message}`);
     return res.json({ success: false, query: req.body.query || "", results: [], error_message: error.message });
   }
 };
+

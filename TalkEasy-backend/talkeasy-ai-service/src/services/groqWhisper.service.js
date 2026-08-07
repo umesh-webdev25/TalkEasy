@@ -4,10 +4,24 @@ import { env } from '../config/env.js';
 import { logger } from 'shared';
 import os from 'os';
 import path from 'path';
+import { createCircuitBreaker } from '../utils/circuitBreaker.js';
 
 class STTService {
   constructor() {
     this.groq = new Groq({ apiKey: env.GROQ_API_KEY });
+    
+    this.transcribeBreaker = createCircuitBreaker(
+      async (readPath) => {
+        return await this.groq.audio.transcriptions.create({
+          file: fs.createReadStream(readPath),
+          model: 'whisper-large-v3',
+        });
+      },
+      { timeout: 15000 },
+      () => {
+        throw new Error("Speech-to-Text service is currently unavailable due to high load. Please try again.");
+      }
+    );
   }
 
   async transcribeAudio(audioInput) {
@@ -32,10 +46,7 @@ class STTService {
       const stat = fs.statSync(readPath);
       logger.info(`🎙️ Sending audio file (${readPath}, ${stat.size} bytes) to Groq Whisper`);
       
-      const transcription = await this.groq.audio.transcriptions.create({
-        file: fs.createReadStream(readPath),
-        model: 'whisper-large-v3',
-      });
+      const transcription = await this.transcribeBreaker.fire(readPath);
       
       const text = transcription.text?.trim();
       if (!text) {

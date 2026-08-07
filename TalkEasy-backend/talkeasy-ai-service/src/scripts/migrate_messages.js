@@ -29,6 +29,8 @@ async function migrateMessages() {
     console.log(`Found ${sessions.length} sessions to migrate.`);
 
     let totalMigrated = 0;
+    const allMessagesToInsert = [];
+    const sessionUpdates = [];
 
     for (const session of sessions) {
       if (!session.messages || session.messages.length === 0) continue;
@@ -42,18 +44,55 @@ async function migrateMessages() {
         createdAt: msg.timestamp || msg.created_at || new Date(),
       }));
 
-      // Insert in bulk for this session
-      await ChatMessage.insertMany(newMessages);
+      allMessagesToInsert.push(...newMessages);
       
-      // Update message_count on session to reflect accurately
-      session.message_count = await ChatMessage.countDocuments({ sessionId: session._id });
-      
-      // Remove embedded messages to free up document space
-      session.messages = undefined;
-      await session.save();
+      sessionUpdates.push({
+        updateOne: {
+          filter: { _id: session._id },
+          update: {
+            $unset: { messages: 1 },
+            $inc: { message_count: newMessages.length }
+          }
+        }
+      });
 
       totalMigrated += newMessages.length;
-      console.log(`Migrated ${newMessages.length} messages for session ${session.session_id}`);
+    }
+
+    console.log(`Prepared ${allMessagesToInsert.length} messages and ${sessionUpdates.length} session updates. Processing in chunks...`);
+
+    const CHUNK_SIZE = 5000;
+    
+    // Process messages in chunks
+    for (let i = 0; i < allMessagesToInsert.length; i += CHUNK_SIZE) {
+      const messageChunk = allMessagesToInsert.slice(i, i + CHUNK_SIZE);
+      const sessionChunk = sessionUpdates.slice(
+        Math.floor((i / allMessagesToInsert.length) * sessionUpdates.length),
+        Math.floor(((i + CHUNK_SIZE) / allMessagesToInsert.length) * sessionUpdates.length)
+      );
+
+      // In case the proportional slice misses elements at the very end
+      const actualSessionChunk = (i + CHUNK_SIZE >= allMessagesToInsert.length)
+        ? sessionUpdates.slice(Math.floor((i / allMessagesToInsert.length) * sessionUpdates.length))
+        : sessionChunk;
+
+      const dbSession = await mongoose.startSession();
+      try {
+        await dbSession.withTransaction(async () => {
+          if (messageChunk.length > 0) {
+            await ChatMessage.insertMany(messageChunk, { session: dbSession, ordered: false });
+          }
+          if (actualSessionChunk.length > 0) {
+            await ChatSession.bulkWrite(actualSessionChunk, { session: dbSession, ordered: false });
+          }
+        });
+        console.log(`✅ Processed chunk: ${messageChunk.length} messages, ${actualSessionChunk.length} session updates.`);
+      } catch (err) {
+        console.error(`❌ Error processing chunk starting at index ${i}:`, err);
+        throw err;
+      } finally {
+        await dbSession.endSession();
+      }
     }
 
     console.log(`\n🎉 Migration Complete! Total messages migrated: ${totalMigrated}`);

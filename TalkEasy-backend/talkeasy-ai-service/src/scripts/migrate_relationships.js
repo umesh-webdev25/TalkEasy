@@ -49,16 +49,58 @@ async function migrateRelationships() {
     console.log(`✅ Updated ${orphanFiles.modifiedCount} orphaned Files.`);
 
     console.log("\n--- Phase 4: Fixing message_count totals ---");
-    const allSessions = await ChatSession.find({});
-    let recalcCount = 0;
-    for (const session of allSessions) {
-      const realCount = await ChatMessage.countDocuments({ sessionId: session._id });
-      if (session.message_count !== realCount) {
-        session.message_count = realCount;
-        await session.save();
-        recalcCount++;
+    
+    // Step 1: Use aggregation to get message counts for all sessions efficiently
+    const messageCounts = await ChatMessage.aggregate([
+      { $group: { _id: "$sessionId", count: { $sum: 1 } } }
+    ]);
+    
+    const countMap = new Map();
+    for (const mc of messageCounts) {
+      if (mc._id) {
+        countMap.set(mc._id.toString(), mc.count);
       }
     }
+
+    const allSessions = await ChatSession.find({});
+    const sessionUpdates = [];
+    
+    for (const session of allSessions) {
+      const realCount = countMap.get(session._id.toString()) || 0;
+      if (session.message_count !== realCount) {
+        sessionUpdates.push({
+          updateOne: {
+            filter: { _id: session._id },
+            update: { $set: { message_count: realCount } }
+          }
+        });
+      }
+    }
+
+    let recalcCount = sessionUpdates.length;
+    
+    if (recalcCount > 0) {
+      console.log(`Prepared ${recalcCount} session updates. Processing in chunks...`);
+      const CHUNK_SIZE = 5000;
+      
+      for (let i = 0; i < sessionUpdates.length; i += CHUNK_SIZE) {
+        const chunk = sessionUpdates.slice(i, i + CHUNK_SIZE);
+        const dbSession = await mongoose.startSession();
+        
+        try {
+          await dbSession.withTransaction(async () => {
+            await ChatSession.bulkWrite(chunk, { session: dbSession, ordered: false });
+          });
+          console.log(`✅ Processed chunk of ${chunk.length} session updates.`);
+        } catch (err) {
+          console.error(`❌ Error processing chunk starting at index ${i}:`, err);
+          throw err;
+        } finally {
+          await dbSession.endSession();
+        }
+      }
+    }
+
     console.log(`✅ Recalculated message_count for ${recalcCount} sessions.`);
 
     console.log("\n🎉 Migration Complete!");

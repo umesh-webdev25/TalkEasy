@@ -6,6 +6,8 @@ import { env } from '../config/env.js';
 import { logger } from 'shared';
 import { customWebSearchService as webSearchService } from './webSearch.service.js';
 import { skillsManager } from './skills.service.js';
+import { createCircuitBreaker } from '../utils/circuitBreaker.js';
+import { cacheService } from './cache/cache.service.js';
 
 const PERSONA_PROMPTS = {
   "default": "a helpful AI assistant",
@@ -21,6 +23,27 @@ class LLMService {
     this.modelName = "gemini-2.5-flash";
     this.persona = PERSONA_PROMPTS[env.AGENT_PERSONA] || PERSONA_PROMPTS["default"];
     this.model = this.genAI.getGenerativeModel({ model: this.modelName });
+    
+    this.generateContentBreaker = createCircuitBreaker(
+      async (promptOrParts) => {
+        return await this.model.generateContent(promptOrParts);
+      },
+      { timeout: 15000 },
+      () => {
+        throw new Error("The AI service is currently experiencing high load or connectivity issues. Please try again in a few moments.");
+      }
+    );
+
+    this.generateContentStreamBreaker = createCircuitBreaker(
+      async (promptOrParts) => {
+        return await this.model.generateContentStream(promptOrParts);
+      },
+      { timeout: 15000 },
+      () => {
+        throw new Error("The AI streaming service is currently down or busy. Please try again later.");
+      }
+    );
+
     logger.info(`🤖 LLM Service initialized with model: ${this.modelName}, persona: ${this.persona}`);
   }
 
@@ -97,20 +120,31 @@ class LLMService {
     return "general";
   }
 
-  _formatNewsResponse(newsData, category) {
-    const articles = newsData.articles || [];
-    if (articles.length === 0) {
-      return "No news articles found for this category.";
+  _formatNewsResponse(newsData, category, locale = 'en') {
+    const cacheKey = cacheService.generateKey('news_fragment', category, locale);
+    
+    let cachedTemplate = cacheService.cache.get(cacheKey)?.value;
+    
+    if (!cachedTemplate) {
+      const articles = newsData.articles || [];
+      if (articles.length === 0) {
+        return "No news articles found for this category.";
+      }
+      const topArticles = articles.slice(0, 3);
+      let template = `{{PERSONA_GREETING}}\n\nHere are the latest ${category} news headlines:\n\n`;
+      topArticles.forEach((article, i) => {
+        const title = article.title || "No title available";
+        const source = (article.source && article.source.name) || "Unknown source";
+        template += `${i + 1}. ${title} - ${source}\n`;
+      });
+      template += "\nWould you like me to read any of these articles in detail?";
+      
+      cachedTemplate = template;
+      cacheService.set(cacheKey, template, 15 * 60, { isFragment: true });
     }
-    const topArticles = articles.slice(0, 3);
-    let response = `Here are the latest ${category} news headlines:\n\n`;
-    topArticles.forEach((article, i) => {
-      const title = article.title || "No title available";
-      const source = (article.source && article.source.name) || "Unknown source";
-      response += `${i + 1}. ${title} - ${source}\n`;
-    });
-    response += "\nWould you like me to read any of these articles in detail?";
-    return response;
+
+    const personaGreeting = `[Assistant Persona: ${this.persona}]`;
+    return cacheService.hydrateHoles(cachedTemplate, { PERSONA_GREETING: personaGreeting });
   }
 
   async generateResponse(userMessage, chatHistory, language = "auto", systemPromptOverride = null, attachments = []) {
@@ -149,7 +183,7 @@ class LLMService {
           let enhancedPrompt = `You are ${currentPersona}. Based on the following search results, provide a comprehensive answer to the user's question.\n\nSEARCH RESULTS FOR "${query}":\n${formattedResults}\n\nUSER'S ORIGINAL QUESTION: "${userMessage}"\n\n${historyContext}\n\nPlease provide a helpful, accurate answer based on the search results.\nSummarize the key information and cite relevant sources if appropriate.`;
           enhancedPrompt = `${languageInstruction}\n${enhancedPrompt}`;
           
-          const result = await this.model.generateContent(enhancedPrompt);
+          const result = await this.generateContentBreaker.fire(enhancedPrompt);
           const responseText = result.response.text();
           
           if (responseText && responseText.trim()) {
@@ -164,12 +198,12 @@ class LLMService {
 
       if (['news', 'headlines', 'latest news', 'current events', 'breaking news'].some(k => userMessage.toLowerCase().includes(k)) && !systemPromptOverride) {
         const category = this._extractNewsCategory(userMessage);
-        logger.info(`📰 Fetching news for category: ${category}`);
+        logger.info(`📰 Fetching news for category: ${category} (locale: ${lang})`);
         const newsServiceSkill = skillsManager.getSkill("news");
         if (newsServiceSkill) {
-          const newsData = await newsServiceSkill.getNewsHeadlines(category);
+          const newsData = await newsServiceSkill.getNewsHeadlines(category, lang);
           if (!newsData.error && newsData.articles && newsData.articles.length > 0) {
-            return this._formatNewsResponse(newsData, category);
+            return this._formatNewsResponse(newsData, category, lang);
           } else {
             return "I couldn't fetch the latest news at the moment. Please try again later.";
           }
@@ -212,7 +246,7 @@ class LLMService {
       parts.push({ text: llmPrompt });
 
       logger.info(`🤖 Sending generateContent request to Gemini (${parts.length} content parts)...`);
-      const result = await this.model.generateContent(parts.length > 1 ? parts : llmPrompt);
+      const result = await this.generateContentBreaker.fire(parts.length > 1 ? parts : llmPrompt);
       const responseText = result.response.text();
       
       if (!responseText || !responseText.trim()) {
@@ -290,7 +324,7 @@ class LLMService {
       }
       parts.push({ text: llmPrompt });
 
-      const result = await this.model.generateContentStream(parts.length > 1 ? parts : llmPrompt);
+      const result = await this.generateContentStreamBreaker.fire(parts.length > 1 ? parts : llmPrompt);
       let accumulatedResponse = "";
 
       for await (const chunk of result.stream) {
@@ -323,6 +357,17 @@ class GeminiDocumentService {
     this.genAI = new GoogleGenerativeAI(this.apiKey);
     this.fileManager = new GoogleAIFileManager(this.apiKey);
     this.modelName = 'gemini-2.5-flash';
+
+    this.analyzeBreaker = createCircuitBreaker(
+      async (args) => {
+        const model = this.genAI.getGenerativeModel({ model: this.modelName });
+        return await model.generateContent(args);
+      },
+      { timeout: 20000 },
+      () => {
+        throw new Error("Document analysis service is currently experiencing high load. Please try again later.");
+      }
+    );
   }
 
   async uploadFile(filePath, mimeType) {
@@ -347,7 +392,7 @@ class GeminiDocumentService {
     try {
       const model = this.genAI.getGenerativeModel({ model: this.modelName });
       
-      const result = await model.generateContent([
+      const result = await this.analyzeBreaker.fire([
         {
           fileData: {
             mimeType,
@@ -370,7 +415,7 @@ class GeminiDocumentService {
       
       const fullPrompt = `Below is the content extracted from a document:\n\n${text}\n\nBased on the document content above, please fulfill the following request: ${prompt}`;
       
-      const result = await model.generateContent(fullPrompt);
+      const result = await this.analyzeBreaker.fire(fullPrompt);
       
       return result.response.text();
     } catch (error) {
