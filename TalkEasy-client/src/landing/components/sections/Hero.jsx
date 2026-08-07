@@ -44,7 +44,7 @@ export default function Hero() {
         <AntigravityBackground className="opacity-70" color="#8b8b95" />
       </Suspense>
 
-      <div className="relative z-10 mx-auto max-w-[1100px] px-6 text-center">
+      <div className="relative z-10 mx-auto max-w-[1100px] px-6 text-center flex min-h-[calc(100vh-140px)] flex-col items-center justify-center py-12">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
