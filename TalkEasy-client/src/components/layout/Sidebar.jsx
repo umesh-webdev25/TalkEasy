@@ -426,7 +426,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                               setRenameValue("");
                             }
                           }}
-                          className="w-[85%] bg-transparent border-b border-brand-blue text-sm text-app-text outline-none pr-6"
+                          className="w-[85%] bg-transparent border-b border-brand-blue text-xs text-app-text outline-none pr-6"
                         />
                       ) : (
                         <p className="text-sm text-app-text font-medium truncate pr-6">

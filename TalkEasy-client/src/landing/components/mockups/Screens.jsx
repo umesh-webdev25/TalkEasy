@@ -74,19 +74,19 @@ export const ShowcaseChatScreen = memo(function ShowcaseChatScreen({ className }
   return (
     <div
       className={cn(
-        "relative w-full h-full overflow-hidden shadow-2xl flex items-center justify-center",
+        "relative w-full h-full overflow-y-auto custom-scrollbar shadow-2xl bg-[var(--surface-solid)]",
         className,
       )}
     >
       <img
         src="/chat2-white.png"
         alt="TalkEasy Assistant Chat"
-        className="block dark:hidden w-full h-full object-cover object-top"
+        className="block dark:hidden w-full h-auto"
       />
       <img
         src="/chat2-dark.png"
         alt="TalkEasy Assistant Chat"
-        className="hidden dark:block w-full h-full object-cover object-top"
+        className="hidden dark:block w-full h-auto"
       />
     </div>
   );
@@ -147,10 +147,10 @@ export const VoiceCallScreen = memo(function VoiceCallScreen({ className }) {
 
 export const ImageGenScreen = memo(function ImageGenScreen({ className }) {
   const tiles = [
-    { label: "Midnight city", tone: "bg-zinc-800 text-zinc-300" },
-    { label: "Abstract bloom", tone: "bg-zinc-200 text-zinc-600" },
-    { label: "Isometric office", tone: "bg-zinc-700 text-zinc-300" },
-    { label: "Neon waves", tone: "bg-zinc-300 text-zinc-700" },
+    { label: "Midnight city", tone: "bg-zinc-800 text-zinc-300", image: "/mockups/midnight_city.png" },
+    { label: "Abstract bloom", tone: "bg-zinc-200 text-zinc-600", image: "/mockups/abstract_bloom.png" },
+    { label: "Isometric office", tone: "bg-zinc-700 text-zinc-300", image: "/mockups/isometric_office.png" },
+    { label: "Neon waves", tone: "bg-zinc-300 text-zinc-700", image: "/mockups/neon_waves.png" },
   ];
   return (
     <div
@@ -171,14 +171,18 @@ export const ImageGenScreen = memo(function ImageGenScreen({ className }) {
         {tiles.map((tile) => (
           <div
             key={tile.label}
-            className={cn(
-              "relative rounded-xl overflow-hidden border border-[var(--glass-border)]",
-              tile.tone,
-            )}
+            className="relative rounded-xl overflow-hidden border border-[var(--glass-border)] group"
           >
-            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-medium opacity-80 px-1 text-center">
-              {tile.label}
-            </span>
+            <img 
+              src={tile.image} 
+              alt={tile.label} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+              <span className="block text-[9px] font-medium text-white/90 text-center truncate">
+                {tile.label}
+              </span>
+            </div>
           </div>
         ))}
       </div>

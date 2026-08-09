@@ -328,11 +328,11 @@ const ChatPage = () => {
                 )}
 
                 <div
-                  className={`flex flex-col gap-2 max-w-[85%] sm:max-w-xl md:max-w-2xl ${isUser ? "items-end" : ""}`}
+                  className={`flex flex-col gap-1.5 max-w-[85%] sm:max-w-md md:max-w-lg lg:max-w-xl ${isUser ? "items-end" : ""}`}
                 >
                   {/* Chat bubble */}
                   <div
-                    className={`px-4 py-3 rounded-2xl text-sm leading-relaxed border shadow-sm transition-all duration-300 break-words ${
+                    className={`px-3.5 py-2.5 rounded-xl text-[13px] leading-normal border shadow-sm transition-all duration-300 break-words ${
                       isUser
                         ? "bg-brand-blue/10 border-brand-blue/20 text-app-text rounded-tr-none"
                         : "bg-surface-solid border-glass-border text-app-text rounded-tl-none"
@@ -340,7 +340,7 @@ const ChatPage = () => {
                   >
                     {(() => {
                       // Extract file attachments
-                      let displayText = message.text || "";
+                      let displayText = (message.text || "").trim();
                       const fileMatches = displayText.match(
                         /\[FILE:([a-zA-Z0-9-]+)\]/g,
                       );
@@ -430,23 +430,21 @@ const ChatPage = () => {
                       );
                     })()}
 
-                    <div
-                      className={`flex items-center gap-1.5 mt-3 pt-3 border-t border-glass-border text-[10px] text-app-text-muted font-medium ${isUser ? "justify-end" : "justify-between"}`}
-                    >
-                      {/* <span>{message.time}</span> */}
-
-                      {!isUser && (
+                    {!isUser && (
+                      <div
+                        className="flex items-center gap-1.5 mt-1.5 pt-1.5 border-t border-glass-border text-[10px] text-app-text-muted font-medium justify-between"
+                      >
                         <div className="flex items-center gap-3">
                           <button
                             onClick={() => handleCopy(message.text, message.id)}
-                            className="hover:text-app-text transition-colors"
+                            className="hover:text-app-text transition-colors cursor-pointer"
                             title="Copy message"
                           >
                             <Copy size={13} />
                           </button>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Suggestion Chips (only on last AI message) */}
