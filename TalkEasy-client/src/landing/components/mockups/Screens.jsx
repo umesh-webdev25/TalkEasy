@@ -52,19 +52,19 @@ export const ChatScreen = memo(function ChatScreen({ className }) {
   return (
     <div
       className={cn(
-        "relative w-full overflow-hidden rounded-2xl border border-[var(--glass-border)] bg-[var(--surface-solid)] shadow-2xl",
+        "relative w-full overflow-hidden leading-none",
         className,
       )}
     >
       <img
         src="/Chat-white.png"
         alt="TalkEasy Assistant Interface"
-        className="block dark:hidden w-full h-auto"
+        className="block dark:hidden w-full h-auto align-bottom mb-[-1px]"
       />
       <img
-        src="/Chat-Dark.png"
+        src="/Chat-dark.png"
         alt="TalkEasy Assistant Interface"
-        className="hidden dark:block w-full h-auto"
+        className="hidden dark:block w-full h-auto align-bottom mb-[-1px]"
       />
     </div>
   );
