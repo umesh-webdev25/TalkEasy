@@ -122,7 +122,7 @@ export default function Hero() {
           transformPerspective: 1200,
           x: cardX,
         }}
-        className="relative z-10 mt-16 w-full max-w-[1000px] px-5 sm:px-10"
+        className="relative z-10 mt-16 w-full max-w-[1400px] px-5 sm:px-10"
       >
         <motion.div
           initial={{ opacity: 0, y: 44, scale: 0.97 }}
@@ -132,7 +132,7 @@ export default function Hero() {
         >
           <div className="absolute inset-x-0 top-0 h-1.5 bg-[var(--text-primary)]/10" aria-hidden />
           <div className="block">
-            <ChatScreen className="h-[380px] sm:h-[460px] lg:h-[480px]" />
+            <ChatScreen className="h-auto w-full" />
           </div>
         </motion.div>
       </motion.div>

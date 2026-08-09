@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { Mail, Lock, User, UserPlus, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -76,11 +77,16 @@ const RegisterPage = () => {
   };
   return (
     <div className="relative min-h-screen w-full flex items-center justify-center p-4 bg-app-bg overflow-hidden select-none">
-      {/* Ambient Glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-violet/10 dark:bg-brand-violet/5 filter blur-[120px] pointer-events-none animate-float" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-brand-blue/10 dark:bg-brand-blue/5 filter blur-[120px] pointer-events-none animate-float" style={{ animationDelay: '2.3s' }} />
+      {/* Background matching landing page */}
+      <div className="bg-grid-faint mask-fade-x absolute inset-0 opacity-70" aria-hidden />
+      <div className="pointer-events-none absolute top-[-18%] left-1/2 h-[520px] w-[900px] -translate-x-1/2 rounded-[100%] bg-[var(--text-primary)]/[0.035] blur-3xl" aria-hidden />
 
-      <div className="w-full max-w-[460px] z-10">
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-[460px] z-10"
+      >
         {/* Brand Logo Header */}
         <div className="flex flex-col items-center mb-6">
           <img
@@ -242,7 +248,7 @@ const RegisterPage = () => {
             Sign in here
           </Link>
         </p>
-      </div>
+      </motion.div>
     </div>
   );
 };

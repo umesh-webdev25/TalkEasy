@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, MicOff } from 'lucide-react';
+import { Mic } from 'lucide-react';
 
 const VoiceOrb = ({ isListening, onClick }) => {
   return (
@@ -13,7 +13,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{
                 scale: [1, 1.4, 1.1, 1.3, 1],
-                opacity: [0.5, 0.8, 0.6, 0.9, 0.5],
+                opacity: [0.3, 0.5, 0.4, 0.6, 0.3],
               }}
               exit={{ opacity: 0 }}
               transition={{
@@ -21,7 +21,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
                 repeat: Infinity,
                 ease: "easeInOut"
               }}
-              className="absolute w-52 h-52 rounded-full bg-brand-blue/60 filter blur-3xl"
+              className="absolute w-52 h-52 rounded-full bg-[var(--text-primary)]/10 filter blur-3xl"
             />
           )}
         </AnimatePresence>
@@ -36,11 +36,11 @@ const VoiceOrb = ({ isListening, onClick }) => {
             scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
             rotate: { duration: 25, repeat: Infinity, ease: "linear" }
           }}
-          className="relative w-44 h-44 rounded-full p-[2px] bg-brand-blue/30 flex items-center justify-center cursor-pointer shadow-2xl"
+          className="relative w-44 h-44 rounded-full p-[2px] bg-[var(--text-primary)]/10 flex items-center justify-center cursor-pointer shadow-2xl"
           onClick={onClick}
         >
           {/* Inner glass orb container */}
-          <div className="w-full h-full rounded-full bg-white dark:bg-[#0d1016] flex items-center justify-center overflow-hidden border border-white/20">
+          <div className="w-full h-full rounded-full bg-[var(--surface-solid)] flex items-center justify-center overflow-hidden border border-[var(--glass-border)]">
             {/* Spinning background gradients */}
             <motion.div
               animate={isListening ? {
@@ -49,7 +49,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
                 scale: [1, 1.2, 0.9, 1.1, 1]
               } : { x: 0, y: 0 }}
               transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute w-36 h-36 rounded-full bg-brand-blue/40 filter blur-xl opacity-80"
+              className="absolute w-36 h-36 rounded-full bg-[var(--text-primary)]/5 filter blur-xl opacity-80"
             />
 
             {/* Core Orb Sphere */}
@@ -58,19 +58,18 @@ const VoiceOrb = ({ isListening, onClick }) => {
               whileTap={{ scale: 0.95 }}
               animate={isListening ? {
                 scale: [1, 1.08, 0.95, 1.04, 1],
-                backgroundColor: ['rgba(0, 102, 255, 0.2)', 'rgba(0, 209, 255, 0.25)', 'rgba(132, 71, 255, 0.2)', 'rgba(0, 102, 255, 0.2)']
+                backgroundColor: ['rgba(150,150,150,0.05)', 'rgba(150,150,150,0.15)', 'rgba(150,150,150,0.1)', 'rgba(150,150,150,0.05)']
               } : {}}
               transition={{ duration: 4, repeat: Infinity }}
-              className="relative w-28 h-28 rounded-full bg-slate-100 dark:bg-[#1a1e27] border border-white/20 dark:border-white/10 shadow-inner flex items-center justify-center z-10"
+              className="relative w-28 h-28 rounded-full bg-[var(--glass-bg)] border border-[var(--glass-border)] shadow-inner flex items-center justify-center z-10"
             >
               {/* Mic Icon */}
               <motion.div
                 animate={isListening ? {
                   scale: [1, 1.1, 1],
-                  color: ['#0066ff', '#00d1ff', '#8447ff', '#0066ff']
                 } : {}}
                 transition={{ duration: 2, repeat: Infinity }}
-                className="text-slate-700 dark:text-slate-200"
+                className="text-[var(--text-primary)]"
               >
                 {isListening ? (
                   <Mic className="w-8 h-8" />
@@ -94,7 +93,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
               delay: i * 0.7,
               ease: "easeOut"
             }}
-            className="absolute w-44 h-44 border border-brand-cyan/30 rounded-full pointer-events-none"
+            className="absolute w-44 h-44 border border-[var(--text-primary)]/20 rounded-full pointer-events-none"
           />
         ))}
       </div>
@@ -103,7 +102,7 @@ const VoiceOrb = ({ isListening, onClick }) => {
         initial={{ opacity: 0.8 }}
         animate={isListening ? { opacity: [0.5, 1, 0.5] } : { opacity: 0.8 }}
         transition={{ duration: 2, repeat: Infinity }}
-        className="mt-6 text-sm font-semibold tracking-wider text-brand-blue uppercase dark:text-brand-cyan"
+        className="mt-6 text-sm font-semibold tracking-wider text-[var(--text-primary)] uppercase"
       >
         {isListening ? 'TalkEasy is Listening...' : 'Click Orb to Talk'}
       </motion.p>

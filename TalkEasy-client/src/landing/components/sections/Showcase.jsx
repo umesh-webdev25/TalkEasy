@@ -4,12 +4,12 @@ import { Database, Mic, MessageSquare, Images, FileText } from 'lucide-react';
 import SectionHeading from '../ui/SectionHeading';
 import ScrollExpand from '../animations/ScrollExpand';
 import AppFrame from '../mockups/AppFrame';
-import { ChatScreen, VoiceCallScreen, ImageGenScreen, PdfChatScreen } from '../mockups/Screens';
+import { ShowcaseChatScreen, VoiceCallScreen, ImageGenScreen, PdfChatScreen } from '../mockups/Screens';
 import { cn } from '../../utils/cn';
 
 const SCREENS = [
   { id: 'voice', label: 'Voice', icon: Mic, component: VoiceCallScreen },
-  { id: 'chat', label: 'Chat', icon: MessageSquare, component: ChatScreen },
+  { id: 'chat', label: 'Chat', icon: MessageSquare, component: ShowcaseChatScreen },
   { id: 'images', label: 'Images', icon: Images, component: ImageGenScreen },
   { id: 'pdf', label: 'PDF', icon: FileText, component: PdfChatScreen },
 ];
