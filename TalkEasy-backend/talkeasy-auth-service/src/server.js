@@ -5,7 +5,7 @@ import { connectDB, disconnectDB } from './config/database.js';
 import { logger } from 'shared';
 import dns from 'dns';
 
-dns.setServers(['8.8.8.8', '8.8.4.4']);
+dns.setServers(['1.1.1.1', '8.8.8.8']);
 
 const PORT = env.PORT || 3001;
 
