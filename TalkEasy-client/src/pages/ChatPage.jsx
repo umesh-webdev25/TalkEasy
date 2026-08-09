@@ -306,7 +306,7 @@ const ChatPage = () => {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-transparent relative mt-0">
       {/* Messages Content */}
-      <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 md:space-y-8 scrollbar-hide">
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 md:space-y-6 scrollbar-hide">
         {activeChat?.messages && activeChat.messages.length > 0 ? (
           activeChat.messages.map((message) => {
             const isUser = message.sender === "user";
@@ -318,7 +318,7 @@ const ChatPage = () => {
               >
                 {/* AI Avatar */}
                 {!isUser && (
-                  <div className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-transparent overflow-hidden">
+                  <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-transparent overflow-hidden">
                     <img
                       src="/robot.png"
                       alt="AI"
@@ -332,7 +332,7 @@ const ChatPage = () => {
                 >
                   {/* Chat bubble */}
                   <div
-                    className={`px-5 py-4 rounded-2xl text-sm leading-relaxed border shadow-sm transition-all duration-300 break-words ${
+                    className={`px-4 py-3 rounded-2xl text-sm leading-relaxed border shadow-sm transition-all duration-300 break-words ${
                       isUser
                         ? "bg-brand-blue/10 border-brand-blue/20 text-app-text rounded-tr-none"
                         : "bg-surface-solid border-glass-border text-app-text rounded-tl-none"
@@ -475,8 +475,8 @@ const ChatPage = () => {
           /* Empty Chat State */
           <div className="h-full flex flex-col items-center p-6 select-none max-w-5xl mx-auto w-full">
             {/* Hero */}
-            <div className="flex flex-col items-center text-center mt-4 mb-10">
-              <div className="w-40 h-40 relative mb-6 flex items-center justify-center">
+            <div className="flex flex-col items-center text-center mt-4 mb-8">
+              <div className="w-32 h-32 relative mb-4 flex items-center justify-center">
                 <div className="absolute inset-0 bg-brand-blue/20 rounded-full blur-2xl animate-pulse-slow"></div>
                 <div className="absolute inset-4 bg-brand-blue/10 rounded-full blur-xl"></div>
 
@@ -489,7 +489,7 @@ const ChatPage = () => {
                 />
               </div>
 
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-app-text mb-3 tracking-tight animate-fade-in-up">
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-app-text mb-3 tracking-tight animate-fade-in-up">
                 Welcome to{" "}
                 <span className="text-brand-blue dark:text-brand-cyan">
                   TalkEasy AI
@@ -517,9 +517,9 @@ const ChatPage = () => {
               {/* Section heading */}
               <div className="flex items-center justify-between gap-4 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-glass-border bg-surface-solid shadow-sm">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl border border-glass-border bg-surface-solid shadow-sm">
                     <Sparkles
-                      size={18}
+                      size={16}
                       strokeWidth={2}
                       className="text-app-text"
                     />
@@ -551,9 +551,9 @@ const ChatPage = () => {
                       type="button"
                       onClick={() => setInputValue(action.prompt)}
                       className="
-            group relative flex min-h-[150px] w-full
+            group relative flex min-h-[130px] w-full
             flex-col items-start overflow-hidden rounded-2xl
-            border border-glass-border bg-surface-solid p-5
+            border border-glass-border bg-surface-solid p-4
             text-left shadow-sm
             transition-all duration-300 ease-out
             hover:-translate-y-1
@@ -581,7 +581,7 @@ const ChatPage = () => {
                       {/* Icon */}
                       <div
                         className="
-              relative z-10 mb-4 flex h-11 w-11
+              relative z-10 mb-4 flex h-9 w-9
               items-center justify-center rounded-xl
               border border-glass-border bg-app-bg
               shadow-sm transition-all duration-300
@@ -590,7 +590,7 @@ const ChatPage = () => {
             "
                       >
                         <Icon
-                          size={21}
+                          size={18}
                           strokeWidth={1.8}
                           className="text-app-text"
                         />
@@ -702,7 +702,7 @@ const ChatPage = () => {
 
           <form
             onSubmit={handleSend}
-            className="w-full h-16 flex items-center bg-surface-solid rounded-full border border-glass-border shadow-md px-2 py-2"
+            className="w-full h-14 flex items-center bg-surface-solid rounded-full border border-glass-border shadow-md px-1.5 py-1.5"
           >
             <div className="flex items-center gap-1.5 pl-2 relative">
               {/* <button
@@ -715,9 +715,9 @@ const ChatPage = () => {
               <button
                 type="button"
                 onClick={() => setShowAttachMenu(!showAttachMenu)}
-                className="w-[44px] h-[44px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors cursor-pointer"
+                className="w-[36px] h-[36px] rounded-full flex items-center justify-center text-app-text-muted hover:text-app-text hover:bg-surface-solid-hover transition-colors cursor-pointer"
               >
-                <Plus size={22} />
+                <Plus size={20} />
               </button>
 
               {showAttachMenu && (
@@ -798,17 +798,17 @@ const ChatPage = () => {
               {inputValue.trim() || stagedFiles.length > 0 ? (
                 <button
                   type="submit"
-                  className="w-[44px] h-[44px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                  className="w-[36px] h-[36px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
                 >
-                  <Send size={18} className="-ml-0.5" />
+                  <Send size={16} className="-ml-0.5" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={handleMicClick}
-                  className="w-[44px] h-[44px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
+                  className="w-[36px] h-[36px] rounded-full bg-brand-blue text-on-brand hover:opacity-95 active:scale-95 transition-all duration-300 flex items-center justify-center cursor-pointer shrink-0 shadow-md"
                 >
-                  <AudioLines size={18} strokeWidth={2.5} />
+                  <AudioLines size={16} strokeWidth={2.5} />
                 </button>
               )}
             </div>

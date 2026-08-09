@@ -106,11 +106,11 @@ const AssistantPanel = () => {
     <aside
       className="
         hidden lg:flex
-        w-70
+        w-64
         border-l border-glass-border
         bg-glass-bg
         flex-col
-        p-6
+        p-5
         overflow-hidden
         h-full
         min-h-0
@@ -128,8 +128,8 @@ const AssistantPanel = () => {
           </button>
         </div>
 
-        <div className="bg-surface-solid border border-glass-border rounded-2xl p-5 shadow-sm text-center flex flex-col items-center">
-          <div className="w-16 h-16 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm mb-3">
+        <div className="bg-surface-solid border border-glass-border rounded-2xl p-4 shadow-sm text-center flex flex-col items-center">
+          <div className="w-14 h-14 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center overflow-hidden shadow-sm mb-2.5">
             <img
               src="/robot.png"
               alt="Assistant"
@@ -139,10 +139,10 @@ const AssistantPanel = () => {
           <h3 className="font-bold text-app-text text-base mb-1">
             TalkEasy Assistant
           </h3>
-          <span className="text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border border-brand-blue/20 mb-3">
+          <span className="text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-brand-blue/20 mb-2">
             Professional
           </span>
-          <p className="text-xs text-app-text-secondary leading-relaxed">
+          <p className="text-[11px] text-app-text-secondary leading-relaxed">
             Your reliable AI partner for productivity and creativity.
           </p>
         </div>
@@ -164,14 +164,14 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setWebSearch(!webSearch)}
-              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
+              className={`w-8 h-4.5 rounded-full relative transition-colors duration-300 border border-glass-border flex items-center ${
                 webSearch
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                className={`w-3.5 h-3.5 bg-white rounded-full transition-transform duration-300 ml-0.5 ${
                   webSearch ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
@@ -187,14 +187,14 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setMemory(!memory)}
-              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
+              className={`w-8 h-4.5 rounded-full relative transition-colors duration-300 border border-glass-border flex items-center ${
                 memory
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                className={`w-3.5 h-3.5 bg-white rounded-full transition-transform duration-300 ml-0.5 ${
                   memory ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
@@ -209,14 +209,14 @@ const AssistantPanel = () => {
 
             <button
               onClick={() => setImages(!images)}
-              className={`w-9 h-5 rounded-full relative transition-colors duration-300 border border-glass-border ${
+              className={`w-8 h-4.5 rounded-full relative transition-colors duration-300 border border-glass-border flex items-center ${
                 images
                   ? "bg-brand-blue border-brand-blue"
                   : "bg-surface-solid-hover"
               }`}
             >
               <div
-                className={`w-3.5 h-3.5 bg-white rounded-full absolute top-1/2 left-0.5 -translate-y-1/2 transition-transform duration-300 ${
+                className={`w-3.5 h-3.5 bg-white rounded-full transition-transform duration-300 ml-0.5 ${
                   images ? "translate-x-3.5" : "translate-x-0"
                 }`}
               />
@@ -248,8 +248,8 @@ const AssistantPanel = () => {
                 onClick={() => openFile(file)}
                 className="
                   group
-                  flex items-center gap-3.5
-                  p-3.5
+                  flex items-center gap-3
+                  p-2.5
                   bg-surface-solid
                   border border-glass-border
                   rounded-2xl
@@ -262,12 +262,12 @@ const AssistantPanel = () => {
                 "
               >
                 <div
-                  className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-brand-blue/10 text-brand-blue dark:text-brand-cyan`}
                 >
                   {file.fileType === "image" ? (
-                    <ImageIcon size={20} />
+                    <ImageIcon size={18} />
                   ) : (
-                    <Music size={20} />
+                    <Music size={18} />
                   )}
                 </div>
 

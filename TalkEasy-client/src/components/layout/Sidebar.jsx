@@ -184,10 +184,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const userProfileTrigger = (
     <div 
       className={`flex items-center cursor-pointer group transition-all duration-300 rounded-xl border border-transparent hover:border-glass-border hover:bg-surface-solid-hover hover:shadow-sm ${
-        isOpen ? 'w-full p-2 gap-3' : 'w-12 h-12 mx-auto justify-center p-0'
+        isOpen ? 'w-full p-2 gap-2.5' : 'w-10 h-10 mx-auto justify-center p-0'
       }`}
     >
-      <div className={`rounded-full flex flex-shrink-0 items-center justify-center font-bold text-brand-blue dark:text-brand-cyan bg-gradient-to-br from-brand-blue/20 to-transparent border border-brand-blue/30 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${isOpen ? 'w-10 h-10 text-sm' : 'w-10 h-10 text-base'}`}>
+      <div className={`rounded-full flex flex-shrink-0 items-center justify-center font-bold text-brand-blue dark:text-brand-cyan bg-gradient-to-br from-brand-blue/20 to-transparent border border-brand-blue/30 group-hover:shadow-[0_0_10px_rgba(59,130,246,0.2)] transition-all duration-300 ${isOpen ? 'w-9 h-9 text-[13px]' : 'w-9 h-9 text-sm'}`}>
         {userInitials || "U"}
       </div>
       
@@ -252,43 +252,43 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <aside
         className={`fixed md:relative top-0 bottom-0 left-0 z-45 flex flex-col glass-panel h-[100dvh] ${isMounted ? "transition-all duration-300" : "transition-none"} overflow-hidden ${
           isOpen
-            ? "w-60 translate-x-0 opacity-100 border-r border-glass-border"
-            : "w-0 md:w-[76px] -translate-x-full md:translate-x-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto border-none md:border-r md:border-glass-border"
+            ? "w-56 translate-x-0 opacity-100 border-r border-glass-border"
+            : "w-0 md:w-[68px] -translate-x-full md:translate-x-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto border-none md:border-r md:border-glass-border"
         }`}
       >
         <div className="flex flex-col h-full w-full shrink-0">
           {/* Header */}
-          <div className={`p-5 flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
+          <div className={`p-4 flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
             {isOpen && (
-              <div className="flex items-center gap-3 ml-2">
+              <div className="flex items-center gap-2 ml-1.5">
                 <img
                   src="/talkeasy.svg"
                   alt="TalkEasy Logo"
-                  className="w-8 h-8 object-contain dark:invert mb-1"
+                  className="w-7 h-7 object-contain dark:invert mb-1"
                 />
-                <span className="font-extrabold text-lg text-app-text tracking-tight">
+                <span className="font-extrabold text-[15px] text-app-text tracking-tight">
                   TalkEasy
                 </span>
               </div>
             )}
             <button
               onClick={toggleSidebar}
-              className={`min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg transition-colors ${isOpen ? 'text-app-text-muted hover:bg-surface-solid-hover' : 'hover:bg-surface-solid-hover bg-transparent'}`}
+              className={`min-w-[40px] min-h-[40px] flex items-center justify-center rounded-lg transition-colors ${isOpen ? 'text-app-text-muted hover:bg-surface-solid-hover' : 'hover:bg-surface-solid-hover bg-transparent'}`}
               title={isOpen ? "Close Sidebar" : "Open Sidebar"}
             >
               {isOpen ? (
-                <PanelLeft size={25} />
+                <PanelLeft size={22} />
               ) : (
                 <img
                   src="/talkeasy.svg"
                   alt="TalkEasy Logo"
-                  className="w-7 h-7 object-contain dark:invert"
+                  className="w-[26px] h-[26px] object-contain dark:invert"
                 />
               )}
             </button>
           </div>
 
-          <div className="px-4 mb-4 flex justify-center">
+          <div className="px-3 mb-3 flex justify-center">
             <Button
               onClick={() => {
                 setActiveSidebarView("chats");
@@ -297,12 +297,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 if (isOpen && window.innerWidth < 768) toggleSidebar();
               }}
               variant="primary"
-              className={`rounded-xl transition-all duration-300 ${isOpen ? 'w-full justify-between py-3' : 'w-11 h-11 p-0 flex items-center justify-center rounded-2xl'}`}
+              className={`rounded-xl transition-all duration-300 ${isOpen ? 'w-full justify-between py-2.5 px-3.5' : 'w-10 h-10 p-0 flex items-center justify-center rounded-[14px]'}`}
               title={!isOpen ? "New Chat" : ""}
             >
               {isOpen ? (
-                <span className="flex items-center gap-2">
-                  <Plus size={18} strokeWidth={2.5} />
+                <span className="flex items-center gap-2 text-[13px]">
+                  <Plus size={16} strokeWidth={2.5} />
                   New Chat
                 </span>
               ) : (
@@ -312,13 +312,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </div>
 
           {isOpen && (
-            <div className="px-5 mb-2 mt-2">
-              <span className="text-[10px] font-bold text-app-text-muted uppercase tracking-wider">
+            <div className="px-4 mb-1.5 mt-1.5">
+              <span className="text-[9px] font-bold text-app-text-muted uppercase tracking-wider">
                 Main
               </span>
             </div>
           )}
-          <nav className="px-3 space-y-1 mb-4">
+          <nav className="px-2 space-y-0.5 mb-3">
             {navItems.map((item, idx) => {
               const Icon = item.icon;
               const isActive = activeSidebarView === item.id;
@@ -330,8 +330,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     if (!isOpen && window.innerWidth >= 768) toggleSidebar();
                   }}
                   title={!isOpen ? item.label : ""}
-                  className={`flex items-center rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-300 ${
-                    isOpen ? 'w-full px-3.5 py-2.5 gap-3.5' : 'w-11 h-11 mx-auto justify-center mb-1'
+                  className={`flex items-center rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all duration-300 ${
+                    isOpen ? 'w-full px-3 py-2 gap-3' : 'w-10 h-10 mx-auto justify-center mb-1'
                   } ${
                     isActive
                       ? "bg-brand-blue/10 text-brand-blue dark:text-brand-cyan"
@@ -339,7 +339,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   }`}
                 >
                   <Icon
-                    size={18}
+                    size={16}
                     className={
                       isActive
                         ? "text-brand-blue dark:text-brand-cyan"
@@ -348,7 +348,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   />
                   {isOpen && <span className="flex-1 text-left">{item.label}</span>}
                   {isOpen && item.badge && (
-                    <span className="bg-brand-blue dark:bg-brand-cyan/20 text-on-brand dark:text-brand-cyan text-[10px] px-2 py-0.5 rounded-full font-bold">
+                    <span className="bg-brand-blue dark:bg-brand-cyan/20 text-on-brand dark:text-brand-cyan text-[9px] px-1.5 py-0.5 rounded-full font-bold">
                       {item.badge}
                     </span>
                   )}
@@ -361,7 +361,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             activeSidebarView === "history" ||
             activeSidebarView === "starred") && isOpen && (
             <>
-              <div className="px-5 pb-2 text-xs font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
+              <div className="px-4 pb-2 text-[11px] font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
                 <span>
                   {activeSidebarView === "starred"
                     ? "Starred Chats"
@@ -371,9 +371,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 </span>
                 <button
                   onClick={() => setShowSearch(!showSearch)}
-                  className="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md text-app-text-muted hover:text-app-text transition-colors"
+                  className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-md text-app-text-muted hover:text-app-text transition-colors"
                 >
-                  <Search size={14} />
+                  <Search size={13} />
                 </button>
               </div>
 
@@ -442,9 +442,9 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                             openMenuId === chat.id ? null : chat.id,
                           );
                         }}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 w-[44px] h-[44px] flex items-center justify-center rounded-lg text-app-text-muted hover:text-app-text hover:bg-base-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 w-[36px] h-[36px] flex items-center justify-center rounded-lg text-app-text-muted hover:text-app-text hover:bg-base-200 opacity-0 group-hover:opacity-100 transition-all duration-200"
                       >
-                        <MoreVertical size={16} />
+                        <MoreVertical size={14} />
                       </button>
 
                       {openMenuId === chat.id && (
@@ -525,10 +525,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 Image Generator
               </div>
               <div className="flex-1 flex flex-col items-center justify-center p-4 text-center">
-                <div className="w-16 h-16 rounded-2xl bg-brand-blue/10 text-brand-blue dark:text-brand-cyan flex items-center justify-center mb-4">
-                  <Sparkles size={32} />
+                <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 text-brand-blue dark:text-brand-cyan flex items-center justify-center mb-3">
+                  <Sparkles size={26} />
                 </div>
-                <h3 className="text-sm font-bold text-app-text mb-2">
+                <h3 className="text-sm font-bold text-app-text mb-1.5">
                   Create AI Images
                 </h3>
                 <p className="text-xs text-app-text-secondary mb-6">
@@ -597,12 +597,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     <div
                       key={tool.id}
                       onClick={() => handleToolClick(tool.id)}
-                      className="p-3 rounded-xl bg-surface-solid border border-glass-border hover:bg-surface-solid-hover cursor-pointer transition-all duration-300 flex items-start gap-3 group"
+                      className="p-2.5 rounded-xl bg-surface-solid border border-glass-border hover:bg-surface-solid-hover cursor-pointer transition-all duration-300 flex items-start gap-2.5 group"
                     >
                       <div
-                        className="w-8 h-8 rounded-lg bg-app-bg border border-glass-border flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform"
+                        className="w-7 h-7 rounded-lg bg-app-bg border border-glass-border flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-110 transition-transform"
                       >
-                        <Icon size={16} className="text-app-text" />
+                        <Icon size={14} className="text-app-text" />
                       </div>
                       <div className="min-w-0">
                         <div className="font-bold text-sm text-app-text mb-0.5">
@@ -619,7 +619,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </div>
           )}
 
-          <div className="mt-auto p-3 border-t border-glass-border">
+          <div className="mt-auto p-2 border-t border-glass-border">
             <Dropdown
               trigger={userProfileTrigger}
               items={profileItems}

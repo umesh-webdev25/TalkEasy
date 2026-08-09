@@ -15,10 +15,10 @@ const Button = ({
   const baseStyles = 'inline-flex items-center justify-center font-medium rounded-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-brand-blue/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none cursor-pointer';
   
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2.5 text-sm',
-    lg: 'px-6 py-3.5 text-base',
-    icon: 'p-2.5 rounded-full'
+    sm: 'px-2.5 py-1 text-[11px]',
+    md: 'px-3.5 py-2 text-xs',
+    lg: 'px-5 py-2.5 text-sm',
+    icon: 'p-2 rounded-full'
   };
 
   const variantStyles = {
@@ -43,7 +43,7 @@ const Button = ({
           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
         </svg>
       ) : Icon ? (
-        <span className="mr-2"><Icon size={size === 'sm' ? 14 : size === 'lg' ? 20 : 16} /></span>
+        <span className="mr-1.5"><Icon size={size === 'sm' ? 12 : size === 'lg' ? 18 : 14} /></span>
       ) : null}
       {children}
     </button>
