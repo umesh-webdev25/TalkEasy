@@ -252,13 +252,13 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       <aside
         className={`fixed md:relative top-0 bottom-0 left-0 z-45 flex flex-col glass-panel h-[100dvh] ${isMounted ? "transition-all duration-300" : "transition-none"} overflow-hidden ${
           isOpen
-            ? "w-56 translate-x-0 opacity-100 border-r border-glass-border"
-            : "w-0 md:w-[68px] -translate-x-full md:translate-x-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto border-none md:border-r md:border-glass-border"
+            ? "w-[230px] 2xl:w-[250px] translate-x-0 opacity-100 border-r border-glass-border"
+            : "w-0 md:w-[60px] -translate-x-full md:translate-x-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto border-none md:border-r md:border-glass-border"
         }`}
       >
         <div className="flex flex-col h-full w-full shrink-0">
           {/* Header */}
-          <div className={`p-4 flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
+          <div className={`p-3 flex items-center ${isOpen ? 'justify-between' : 'justify-center'}`}>
             {isOpen && (
               <div className="flex items-center gap-2 ml-1.5">
                 <img
@@ -266,7 +266,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                   alt="TalkEasy Logo"
                   className="w-7 h-7 object-contain dark:invert mb-1"
                 />
-                <span className="font-extrabold text-[15px] text-app-text tracking-tight">
+                <span className="font-extrabold text-[14px] text-app-text tracking-tight">
                   TalkEasy
                 </span>
               </div>
@@ -297,7 +297,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 if (isOpen && window.innerWidth < 768) toggleSidebar();
               }}
               variant="primary"
-              className={`rounded-xl transition-all duration-300 ${isOpen ? 'w-full justify-between py-2.5 px-3.5' : 'w-10 h-10 p-0 flex items-center justify-center rounded-[14px]'}`}
+              className={`rounded-xl transition-all duration-300 ${isOpen ? 'w-full justify-between py-2 px-3' : 'w-10 h-10 p-0 flex items-center justify-center rounded-[14px]'}`}
               title={!isOpen ? "New Chat" : ""}
             >
               {isOpen ? (
@@ -330,8 +330,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                     if (!isOpen && window.innerWidth >= 768) toggleSidebar();
                   }}
                   title={!isOpen ? item.label : ""}
-                  className={`flex items-center rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all duration-300 ${
-                    isOpen ? 'w-full px-3 py-2 gap-3' : 'w-10 h-10 mx-auto justify-center mb-1'
+                  className={`flex items-center rounded-xl font-bold text-[10px] uppercase tracking-wider transition-all duration-300 ${
+                    isOpen ? 'w-full px-3 py-1.5 gap-2.5' : 'w-10 h-10 mx-auto justify-center mb-1'
                   } ${
                     isActive
                       ? "bg-brand-blue/10 text-brand-blue dark:text-brand-cyan"
@@ -361,7 +361,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             activeSidebarView === "history" ||
             activeSidebarView === "starred") && isOpen && (
             <>
-              <div className="px-4 pb-2 text-[11px] font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between">
+              <div className="px-3 pb-2 text-[10px] font-bold text-app-text-muted uppercase tracking-wider flex items-center justify-between mt-1">
                 <span>
                   {activeSidebarView === "starred"
                     ? "Starred Chats"
@@ -378,7 +378,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               </div>
 
               {showSearch && (
-                <div className="px-4 mb-3">
+                <div className="px-3 mb-2">
                   <input
                     type="text"
                     placeholder="Filter chats..."
@@ -429,7 +429,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                           className="w-[85%] bg-transparent border-b border-brand-blue text-xs text-app-text outline-none pr-6"
                         />
                       ) : (
-                        <p className="text-sm text-app-text font-medium truncate pr-6">
+                        <p className="text-[13px] text-app-text font-medium truncate pr-6">
                           {chat.title}
                         </p>
                       )}

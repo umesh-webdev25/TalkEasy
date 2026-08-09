@@ -105,12 +105,13 @@ const AssistantPanel = () => {
   return (
     <aside
       className="
-        hidden lg:flex
-        w-64
+        hidden xl:flex
+        xl:w-[280px] 2xl:w-[300px]
+        shrink-0
         border-l border-glass-border
         bg-glass-bg
         flex-col
-        p-5
+        p-4
         overflow-hidden
         h-full
         min-h-0
@@ -118,12 +119,12 @@ const AssistantPanel = () => {
     >
       {/* Assistant Settings */}
       <section className="mb-8 shrink-0">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-extrabold text-sm text-app-text">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="font-extrabold text-[13px] text-app-text">
             Assistant Profile
           </h2>
 
-          <button className="text-xs font-bold text-brand-blue dark:text-brand-cyan hover:underline transition-all">
+          <button className="text-[11px] font-bold text-brand-blue dark:text-brand-cyan hover:underline transition-all">
             Customize
           </button>
         </div>
@@ -136,7 +137,7 @@ const AssistantPanel = () => {
               className="w-full h-full object-cover"
             />
           </div>
-          <h3 className="font-bold text-app-text text-base mb-1">
+          <h3 className="font-bold text-app-text text-[14px] mb-1">
             TalkEasy Assistant
           </h3>
           <span className="text-brand-blue bg-brand-blue/10 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border border-brand-blue/20 mb-2">
@@ -149,15 +150,15 @@ const AssistantPanel = () => {
       </section>
 
       {/* Capability Toggles */}
-      <section className="mb-8 shrink-0">
-        <h3 className="font-bold text-xs text-app-text-muted uppercase tracking-wider mb-4">
+      <section className="mb-6 shrink-0">
+        <h3 className="font-bold text-[11px] text-app-text-muted uppercase tracking-wider mb-3">
           Capabilities
         </h3>
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Web Search */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-app-text-secondary font-medium text-sm">
+            <div className="flex items-center gap-2.5 text-app-text-secondary font-medium text-[13px]">
               <Globe size={18} className="text-app-text-muted" />
               <span>Web Search</span>
             </div>
@@ -180,7 +181,7 @@ const AssistantPanel = () => {
 
           {/* Memory */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 text-app-text-secondary font-medium text-sm">
+            <div className="flex items-center gap-2.5 text-app-text-secondary font-medium text-[13px]">
               <Brain size={18} className="text-app-text-muted" />
               <span>Memory</span>
             </div>

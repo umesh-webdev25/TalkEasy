@@ -306,16 +306,17 @@ const ChatPage = () => {
   return (
     <div className="flex-1 flex flex-col min-h-0 bg-transparent relative mt-0">
       {/* Messages Content */}
-      <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-4 md:space-y-6 scrollbar-hide">
-        {activeChat?.messages && activeChat.messages.length > 0 ? (
-          activeChat.messages.map((message) => {
-            const isUser = message.sender === "user";
+      <div className="flex-1 overflow-y-auto p-3 md:p-4 scrollbar-hide">
+        <div className="max-w-[900px] mx-auto w-full space-y-3 md:space-y-4">
+          {activeChat?.messages && activeChat.messages.length > 0 ? (
+            activeChat.messages.map((message) => {
+              const isUser = message.sender === "user";
 
-            return (
-              <div
-                key={message.id}
-                className={`flex items-start gap-3.5 ${isUser ? "justify-end" : ""}`}
-              >
+              return (
+                <div
+                  key={message.id}
+                  className={`flex items-start gap-3.5 ${isUser ? "justify-end" : ""}`}
+                >
                 {/* AI Avatar */}
                 {!isUser && (
                   <div className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-transparent overflow-hidden">
@@ -328,11 +329,11 @@ const ChatPage = () => {
                 )}
 
                 <div
-                  className={`flex flex-col gap-1.5 max-w-[85%] sm:max-w-md md:max-w-lg lg:max-w-xl ${isUser ? "items-end" : ""}`}
+                  className={`flex flex-col gap-1.5 max-w-[85%] sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl ${isUser ? "items-end" : ""}`}
                 >
                   {/* Chat bubble */}
                   <div
-                    className={`px-3.5 py-2.5 rounded-xl text-[13px] leading-normal border shadow-sm transition-all duration-300 break-words ${
+                    className={`px-3 py-2 rounded-xl text-[14px] leading-relaxed border shadow-sm transition-all duration-300 break-words ${
                       isUser
                         ? "bg-brand-blue/10 border-brand-blue/20 text-app-text rounded-tr-none"
                         : "bg-surface-solid border-glass-border text-app-text rounded-tl-none"
@@ -471,7 +472,7 @@ const ChatPage = () => {
           })
         ) : (
           /* Empty Chat State */
-          <div className="h-full flex flex-col items-center p-6 select-none max-w-5xl mx-auto w-full">
+          <div className="h-full flex flex-col items-center p-4 select-none max-w-[900px] mx-auto w-full">
             {/* Hero */}
             <div className="flex flex-col items-center text-center mt-4 mb-8">
               <div className="w-32 h-32 relative mb-4 flex items-center justify-center">
@@ -524,10 +525,10 @@ const ChatPage = () => {
                   </div>
 
                   <div>
-                    <h3 className="text-base font-bold text-app-text">
+                    <h3 className="text-[14px] font-bold text-app-text">
                       AI Tools
                     </h3>
-                    <p className="mt-0.5 text-xs text-app-text-secondary">
+                    <p className="mt-0.5 text-[11px] text-app-text-secondary">
                       Choose a tool to start your next task
                     </p>
                   </div>
@@ -549,9 +550,9 @@ const ChatPage = () => {
                       type="button"
                       onClick={() => setInputValue(action.prompt)}
                       className="
-            group relative flex min-h-[130px] w-full
+            group relative flex min-h-[110px] w-full
             flex-col items-start overflow-hidden rounded-2xl
-            border border-glass-border bg-surface-solid p-4
+            border border-glass-border bg-surface-solid p-3.5
             text-left shadow-sm
             transition-all duration-300 ease-out
             hover:-translate-y-1
@@ -596,11 +597,11 @@ const ChatPage = () => {
 
                       {/* Content */}
                       <div className="relative z-10 flex flex-1 flex-col">
-                        <span className="mb-1.5 text-sm font-bold text-app-text">
+                        <span className="mb-1 text-[13px] font-bold text-app-text">
                           {action.label}
                         </span>
 
-                        <span className="max-w-[240px] text-xs font-medium leading-5 text-app-text-secondary">
+                        <span className="max-w-[240px] text-[11px] font-medium leading-4 text-app-text-secondary">
                           {action.description}
                         </span>
                       </div>
@@ -657,11 +658,12 @@ const ChatPage = () => {
             <TypingIndicator />
           </div>
         )}
-        <div ref={messagesEndRef} />
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
-      <footer className="p-4 md:p-6 bg-transparent shrink-0">
-        <div className="max-w-4xl mx-auto relative">
+      <footer className="p-3 md:p-4 bg-transparent shrink-0">
+        <div className="max-w-[900px] mx-auto relative">
           {/* Staged Files Preview */}
           {stagedFiles.length > 0 && (
             <div className="flex flex-wrap gap-3 mb-3 p-3 bg-surface-solid border border-glass-border rounded-xl">
@@ -700,7 +702,7 @@ const ChatPage = () => {
 
           <form
             onSubmit={handleSend}
-            className="w-full h-14 flex items-center bg-surface-solid rounded-full border border-glass-border shadow-md px-1.5 py-1.5"
+            className="w-full min-h-[52px] flex items-center bg-surface-solid rounded-[26px] border border-glass-border shadow-md px-1.5 py-1.5"
           >
             <div className="flex items-center gap-1.5 pl-2 relative">
               {/* <button
@@ -788,7 +790,7 @@ const ChatPage = () => {
               placeholder="Message TalkEasy..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="flex-1 bg-transparent border-none outline-none text-app-text text-sm md:text-base placeholder:text-app-text-muted px-4 py-3 focus:ring-0"
+              className="flex-1 bg-transparent border-none outline-none text-app-text text-[14px] placeholder:text-app-text-muted px-3 py-2 focus:ring-0"
             />
 
             {/* Right actions */}
